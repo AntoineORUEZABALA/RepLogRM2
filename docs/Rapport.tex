@@ -1,0 +1,119 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Rapport sur package R6 
+% Version 1 (14/11/2024)
+%
+% Auteurs :
+% Linh Nhi Le Dinh
+% Antoine Oruezabala
+% Béranger Thomas
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	Packages
+%----------------------------------------------------------------------------------------
+
+\documentclass[10pt,french]{report}
+
+\usepackage[frenchb]{babel}
+
+\usepackage[utf8]{inputenc} % Saisir des caractères spéciaux et accentués
+\usepackage[T1]{fontenc} % Imprimer des caractères spéciaux et accentués
+
+
+\usepackage{microtype} % Améliorer les espacements
+
+\usepackage[a4paper, portrait]{geometry}
+
+\usepackage{tabularray} % Pour faire des tableaux plus efficacement
+
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{graphicx} % Afficher des images
+\usepackage{ifthen}
+
+\usepackage{parskip}
+
+\setlength\parindent{0pt}
+
+\usepackage{lmodern}
+%\usepackage{stix2} % font stix 2
+\usepackage{palatino} % font Palatino
+
+\newcommand{\cube}{\raisebox{0.13ex}{\scalebox{0.75}{ $\blacksquare$ }}}
+
+\newcommand{\entreelex}[3][]{%
+	{\large \textbf{\textsc{#2}}} % Entrée (obligatoire)
+	\if\relax\detokenize{#1}\relax % Si #1 est vide
+	\else % Si #1 n'est pas vide
+	\raisebox{0.15ex}{\scalebox{0.7}{$\Diamond$}} % Diamant
+	[#1] % Acronyme (facultatif)
+	\fi
+	\raisebox{0.13ex}{\scalebox{0.75}{$\blacksquare$}} #3 % Définition (obligatoire)
+}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+	
+	\begin{titlepage}
+		\centering
+		{\Large\bfseries Université Lumière Lyon 2}\par
+		{\large Institut de la communication}\par\vspace{4.5cm}
+		
+		%\includegraphics[width=0.3\textwidth]{logo.png}\par\vspace{1cm}
+		
+		{\Huge\bfseries Librairie MIMOSA}\par\vspace{1cm}
+		{\huge\bfseries Mixed Input Multinomial Optimization for Statistical Analysis}\par\vspace{4.5cm}
+		
+		{\Large\itshape Par}\par
+		{\Large Linh Nhi Le Dinh}\par
+		{\Large Antoine Oruezabala}\par
+		{\Large Béranger Thomas}\par\vspace{1cm}
+		
+		{\large Supervisé par:}\par
+		{\large Ricco Rakotomalala}\par\vspace{1cm}
+		
+		{\large\itshape Rapport présenté dans le cadre du}\par
+		{\large Master 2 SISE - 2024/2025}\par\vspace{1cm}
+		
+		%{\large \today}
+		
+		\vfill
+		
+	\end{titlepage}
+	
+	\tableofcontents
+	
+	\setlength{\parskip}{12pt}
+	
+	\chapter{Éléments introductifs}
+	
+	\section{Contexte}
+	
+	Ce document présente la régression logistique multinomiale, par le biais d'une descente de gradient, pour des données mixtes.
+	
+	\chapter{Étude du problème}
+	
+	\chapter{Librairie développée}
+	
+	La librairie développé porte le doux nom de MIMOSA (Mixed Input Multinomial Optimization for Statistical Analysis).
+	
+	\chapter{Lexique}
+	
+	\entreelex{Régression logistique}{La régression logistique vise à prédire la probabilité qu'un événement binaire se produise (oui/non, 1/0) en fonction de variables explicatives. Elle utilise une fonction logistique (ou sigmoïde) pour transformer la combinaison linéaire des variables indépendantes en une probabilité comprise entre 0 et 1.}
+	
+	\entreelex{Régression logistique multinomiale}{Extension de la régression logistique permettant de modéliser une variable qualitative à plus de deux modalités.
+	
+	Cette méthode permet d'estimer la probabilité d'appartenance à chacune des catégories en fonction de variables explicatives quantitatives et/ou qualitatives. Contrairement à la régression logistique binaire qui modélise une seule probabilité $p$, la régression logistique multinomiale estime simultanément les probabilités d'appartenance à toutes les catégories ($p_1, p_2, ..., p_K$), avec la contrainte que leur somme soit égale à 1.
+	
+	Le modèle utilise une transformation logistique généralisée qui garantit que les probabilités estimées restent comprises entre 0 et 1. Une catégorie est choisie comme référence, et le modèle estime les logarithmes des rapports de probabilités (log-odds) entre chaque catégorie et cette référence.
+	
+	Limites :
+	- Sensible à la multicolinéarité des variables explicatives
+	- Nécessite un échantillon suffisamment grand, particulièrement quand le nombre de catégories augmente
+	- Suppose l'indépendance des alternatives non pertinentes (IIA)}
+	
+	\entreelex{Descente de gradient}{La descente de gradient est un algorithme d’optimisation couramment utilisé pour entraîner les modèles de machine learning et les réseaux neuronaux. Ce type d’algorithme entraîne les modèles de machine learning par réduction des erreurs entre les résultats prédits et les résultats réels.\cube Le point de départ n'est qu'un point arbitraire qui nous permet d'évaluer les performances. À partir de ce point de départ, nous allons trouver la dérivée (ou la pente) et, à partir de là, nous pourrons utiliser une ligne tangente pour observer l'inclinaison de la pente. La pente renseigne sur les mises à jour des paramètres, c'est-à-dire les poids et les biais. La pente au point de départ est plus forte, mais au fur et à mesure que de nouveaux paramètres sont générés, elle devrait progressivement diminuer jusqu'à atteindre le point le plus bas de la courbe, dénommé point de convergence.\cube Comme pour trouver la ligne de meilleur ajustement dans la régression linéaire, l'objectif de la descente de gradient est de minimiser la fonction de coût, ou l'erreur entre y prédit et y réel. Pour ce faire, deux points de données sont nécessaires : une orientation et un taux d'apprentissage. Ces facteurs déterminent les calculs de dérivée partielle des itérations futures, ce qui lui permet d'atteindre progressivement le minimum local ou global (c'est-à-dire le point de convergence).. La fonction de perte dans la descente de gradient agit spécifiquement comme un baromètre, évaluant sa précision à chaque itération des mises à jour de paramètres. Jusqu'à ce que la fonction soit proche ou égale à zéro, le modèle continue à ajuster ses paramètres pour obtenir l'erreur la plus faible possible.\cube Il existe trois types d'algorithmes d'apprentissage par descente de gradient : la descente de gradient par lots, la descente de gradient stochastique et la descente de gradient par mini-lots.}
+	
+\end{document}

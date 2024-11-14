@@ -1,0 +1,6 @@
+\babel@toc {french}{}\relax 
+\contentsline {chapter}{\numberline {1}Éléments introductifs}{2}{}%
+\contentsline {section}{\numberline {1.1}Contexte}{2}{}%
+\contentsline {chapter}{\numberline {2}Étude du problème}{3}{}%
+\contentsline {chapter}{\numberline {3}Librairie développée}{4}{}%
+\contentsline {chapter}{\numberline {4}Lexique}{5}{}%

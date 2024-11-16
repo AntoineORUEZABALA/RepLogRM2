@@ -1,0 +1,11 @@
+classe_altitude,code_postal_ban,conso_5_usages_e_finale,cout_total_5_usages,etiquette_dpe,hauteur_sous_plafond,logement,n_etage_appartement,passoire_energetique,periode_construction,qualite_isolation_enveloppe,qualite_isolation_menuiseries,qualite_isolation_murs,qualite_isolation_plancher_bas,surface_habitable_logement,timestamp_reception_dpe,type_batiment,type_energie_n_1,type_installation_chauffage,zone_climatique
+inférieur à 400m,69001,7634.1,926.7,C,2.5,ancien,0.0,non,Avant 1960,moyenne,insuffisante,bonne,très bonne,90.0,1970-01-01 00:00:01.637107200,appartement,Gaz naturel,individuel,H1c
+inférieur à 400m,69001,10055.4,1046.6,D,2.5,ancien,0.0,non,Avant 1960,insuffisante,bonne,insuffisante,très bonne,55.0,1970-01-01 00:00:01.635120000,appartement,Gaz naturel,individuel,H1c
+inférieur à 400m,69001,5146.4,614.6,C,2.5,ancien,0.0,non,Avant 1960,insuffisante,moyenne,insuffisante,très bonne,38.0,1970-01-01 00:00:01.636416000,appartement,Gaz naturel,individuel,H1c
+inférieur à 400m,69001,4406.5,791.0,C,2.5,ancien,0.0,non,2001 - 2010,insuffisante,moyenne,insuffisante,très bonne,66.6,1970-01-01 00:00:01.696896000,appartement,Électricité,mixte (collectif-individuel),H1c
+inférieur à 400m,69001,18407.6,1726.3,D,2.5,ancien,0.0,non,1981 - 1990,insuffisante,insuffisante,insuffisante,très bonne,115.0,1970-01-01 00:00:01.637107200,appartement,Électricité,individuel,H1c
+inférieur à 400m,69001,7634.1,926.7,C,2.5,ancien,0.0,non,Avant 1960,moyenne,insuffisante,bonne,très bonne,90.0,1970-01-01 00:00:01.637107200,appartement,Électricité,individuel,H1c
+inférieur à 400m,69001,8770.9,1003.0,C,2.5,ancien,0.0,non,1991 - 2000,très bonne,moyenne,moyenne,très bonne,87.3,1970-01-01 00:00:01.641168000,appartement,Électricité,individuel,H1c
+inférieur à 400m,69001,8096.1,1368.0,D,2.5,ancien,0.0,non,1981 - 1990,insuffisante,bonne,insuffisante,très bonne,87.0,1970-01-01 00:00:01.677542400,appartement,Électricité,mixte (collectif-individuel),H1c
+inférieur à 400m,69001,3493.0,651.0,C,2.5,ancien,0.0,non,1981 - 1990,insuffisante,moyenne,moyenne,très bonne,49.8,1970-01-01 00:00:01.672185600,appartement,Électricité,mixte (collectif-individuel),H1c
+inférieur à 400m,69001,15161.9,1684.8,F,2.5,ancien,0.0,oui,Inconnue,bonne,moyenne,insuffisante,très bonne,40.1,1970-01-01 00:00:01.723507200,appartement,Gaz naturel,individuel,H1c

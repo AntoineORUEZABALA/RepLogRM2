@@ -3,9 +3,10 @@ sigmoid <- function(x) {
     return(1 / (1 + exp(-x)))
 }
 
-# Hypothèse de la régression logistique
+# Fonction d'hypothèse
 hypothesis <- function(X, theta) {
-    return(sigmoid(X %*% theta))
+    z <- as.matrix(X) %*% theta
+    return(sigmoid(z))
 }
 
 # Fonction de coût pour la régression logistique binaire
@@ -89,6 +90,9 @@ predict <- function(X, theta) {
 
 # Prédiction multiclasse
 predict_multiclass <- function(X, thetas) {
+    # transformer X et thetas en matrice
+    X <- as.matrix(X)
+    thetas <- as.matrix(thetas)
     probabilities <- t(apply(thetas, 1, function(theta) hypothesis(X, theta)))
     return(max.col(probabilities) - 1) # -1 pour correspondre à l'indexation Python
 }

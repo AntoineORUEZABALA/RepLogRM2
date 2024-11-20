@@ -19,58 +19,67 @@ LogisticRegression <- R6Class("LogisticRegression",
         ########################################
         # Méthode fit ##########################
         ########################################
-        fit = function(X, y) {
+        fit = function(X, cible) {
             # Vérifications ##########################
             # X doit être un data.frame
             check_type(X, "data.frame")
 
             # y doit être un vecteur ou un character
-            check_type(y, "character")
+            check_type(cible, "character")
 
             # La cible doit être présente dans les données
-            if (!y %in% colnames(X)) {
-                stop("La variable ", y, " doit être présente dans le dataframe")
+            if (!cible %in% colnames(X)) {
+                stop("La variable ", cible, " doit être présente dans le dataframe")
             }
 
             # Les données de la cible doivent être de type catégorielle (character ou factor)
-            if (!is.character(X[[y]]) && !is.factor(X[[y]])) {
+            if (!is.character(X[[cible]]) && !is.factor(X[[cible]])) {
                 stop("La variable cible doit être de type character ou factor")
             }
 
             # Il faut au moins deux modalités pour la variable cible
-            if (length(unique(X[[y]])) < 2) {
+            if (length(unique(X[[cible]])) < 2) {
                 stop("La variable cible doit avoir au moins deux modalités")
             }
 
             # Séparation en deux jeux ##########################
             # Extraction de la variable cible
-            target_data <- X[[y]]
+            y <- X[[cible]]
 
             # On enlève la cible des variables explicatives
-            X[[y]] <- NULL
+            X[[cible]] <- NULL
 
             # Pré-traitement ##########################
             # Variables explicatives
             X <- private$preprocess_data(X)
+            X <- as.matrix(X)
 
             # Variable cible
             # création d'une matrice one hot
-            matrice_y_onehot <- as.matrix(encodage_one_hot(target_data))
+            y <- encodage_one_hot(y)
+            # transformer en matrice numérique
+            y <- as.matrix(y)
+            print(class(y))
+            print(dim(y))
 
             # Régression ##########################
             # Entraînement du modèle
             taux_apprentissage <- 0.01
             num_iters <- 10000
-            num_classes <- length(unique(y))
+            nb_modalites_cible <- ncol(y)
             theta <- rep(0, ncol(X))
 
             # Convertir X et theta en matrice pour pouvoir la multiplier avec theta
             # dans les fonctions de coût et de gradient
             X <- as.matrix(X)
             theta <- as.matrix(theta)
+            print(class(X))
+            print(dim(X))
+            print(class(theta))
+            print(dim(theta))
 
             # Cas modalité binaire
-            if (num_classes == 2) {
+            if (nb_modalites_cible == 2) {
                 # Cas binaire
                 result <- gradient_descent(X, y, theta, taux_apprentissage, num_iters)
                 theta <- result$theta
@@ -158,7 +167,7 @@ LogisticRegression <- R6Class("LogisticRegression",
 
             # One-hot encoding des variables catégorielles
             if (any(categorical_cols)) {
-                data <- encodage_one_hot(data[categorical_cols])
+                data <- encodage_one_hot(data)
             }
             return(data)
         }
@@ -170,7 +179,7 @@ LogisticRegression <- R6Class("LogisticRegression",
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 data <- read.csv("datasets/gym_members_exercise_tracking.csv")
 cible <- "Workout_Type"
-# cible <- "Gender"
+cible <- "Gender"
 
 # utilisation de LogisticRegression
 LogisticRegression1 <- LogisticRegression$new()

@@ -58,7 +58,12 @@ normaliser <- function(data, methode = "z-score") {
 # Encodage one hot
 encodage_one_hot <- function(data, rfd = FALSE) {
     # Encodage one-hot des variables catégorielles
+    print("encodage_one_hot")
+    print(class(data))
+    print(dim(data))
     data <- dummy_cols(data, remove_first_dummy = rfd)
+    print(class(data))
+    print(dim(data))
     # Enlever la première colonne informative qu'ajoute fastdummies
     return(data[-1])
 }

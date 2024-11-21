@@ -10,6 +10,7 @@ LogisticRegression <- R6Class("LogisticRegression",
 
     # Attributs publics
     public = list(
+        modalites_cible = NULL,
         nb_modalites_cible = NULL,
         cible = NULL,
         data = NULL,
@@ -44,7 +45,8 @@ LogisticRegression <- R6Class("LogisticRegression",
             # Séparation en deux jeux ##########################
             # Extraction de la variable cible
             private$y <- self$data[[self$cible]]
-            # Comptage du nombre de modalités de la cible
+            # Modalités de la cible
+            self$modalites_cible <- levels(as.factor(private$y))
             self$nb_modalites_cible <- length(unique(self$data[[self$cible]]))
 
             # On enlève la cible des variables explicatives
@@ -71,14 +73,13 @@ LogisticRegression <- R6Class("LogisticRegression",
             # Entraînement du modèle
             taux_apprentissage <- 0.00001
             num_iters <- 10000
-            theta <- rep(0, ncol(private$X))
+            # theta <- rep(0, ncol(private$X))
+            theta <- matrix(0, nrow = ncol(private$X), ncol = ncol(private$y))
 
             # Convertir X, y et theta en matrice pour pouvoir la multiplier avec theta
             # dans les fonctions de coût et de gradient
-            # print(X)
             X <- as.matrix(private$X)
             y <- as.matrix(private$y)
-            theta <- as.matrix(theta)
 
             # Cas modalité binaire
             if (self$nb_modalites_cible == 2) {
@@ -109,10 +110,10 @@ LogisticRegression <- R6Class("LogisticRegression",
                 thetas_multiclass <- one_vs_rest(X, y, taux_apprentissage, num_iters)
                 predictions_multiclass <- predict_multiclass(X, thetas_multiclass)
 
-                # Création du dataframe avec les coefficients
-                coef_df <- as.data.frame(thetas_multiclass)
-                names(coef_df) <- colnames(X)
-                rownames(coef_df) <- levels(factor(df[[cible]]))
+                # Création du dataframe avec les coefficients Linh Nhi
+                coef_df <- as.data.frame(t(thetas_multiclass))
+                names(coef_df) <- colnames(X) # Les noms des variables explicatives
+                rownames(coef_df) <- self$modalites_cible[-1] # Les noms des classes automatiquement récupérés
 
                 print("\nCoefficients par modalité et variable :")
                 print(coef_df)
@@ -192,10 +193,10 @@ LogisticRegression <- R6Class("LogisticRegression",
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 data <- read.csv("datasets/gym_members_exercise_tracking.csv")
-data <- read.csv("datasets/ricco.csv")
+# data <- read.csv("datasets/ricco.csv")
 cible <- "Workout_Type"
-cible <- "Gender"
-cible <- "type"
+# cible <- "Gender"
+# cible <- "type"
 
 
 # utilisation de LogisticRegression

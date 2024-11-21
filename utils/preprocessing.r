@@ -42,7 +42,6 @@ imputer_categorielles <- function(data, methode = "mode") {
 # Normalisation
 normaliser <- function(data, methode = "z-score") {
     # Normalisation/standardisation des données
-    # Options : min-max, z-score
     if (methode == "z-score") {
         for (col in names(data)) {
             if (is.numeric(data[[col]])) {

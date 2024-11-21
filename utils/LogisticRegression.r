@@ -49,15 +49,16 @@ gradient_descent <- function(X, y, theta, learning_rate, n_iterations) {
     return(list(theta = theta, cost_history = cost_history))
 }
 
-# One vs Rest
+# One vs Rest Linh Nhi
 one_vs_rest <- function(X, y, learning_rate, n_iterations) {
     m <- nrow(X)
     n <- ncol(X)
-    K <- length(unique(y))
+    K <- ncol(y) # k-1 classes (3 dans ce cas)
     theta <- matrix(0, nrow = n, ncol = K)
+
     for (k in 1:K) {
-        y_k <- y == k
-        theta_result <- gradient_descent(X, y_k, theta[, k], learning_rate, n_iterations)
+        y_k <- as.matrix(y[, k]) # Sélection de la classe k
+        theta_result <- gradient_descent(X, y_k, rep(0, n), learning_rate, n_iterations)
         theta[, k] <- theta_result$theta
     }
     return(theta)
@@ -109,11 +110,9 @@ predict <- function(X, theta) {
 
 # Prédiction multiclasse
 predict_multiclass <- function(X, thetas) {
-    # transformer X et thetas en matrice
-    X <- as.matrix(X)
-    thetas <- as.matrix(thetas)
-    probabilities <- t(apply(thetas, 1, function(theta) hypothesis(X, theta)))
-    return(max.col(probabilities) - 1) # -1 pour correspondre à l'indexation Python
+    probabilities <- sigmoid(X %*% thetas) # Probabilités pour k-1 classes
+    probabilities <- cbind(probabilities, 1 - rowSums(probabilities)) # Ajout de la classe manquante
+    return(max.col(probabilities)) # Classe avec la probabilité maximale
 }
 
 # Fonction de précision

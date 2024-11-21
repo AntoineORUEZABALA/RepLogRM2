@@ -59,10 +59,9 @@ LogisticRegression <- R6Class("LogisticRegression",
             # Variable cible
             # création d'une matrice one hot
             private$y <- encodage_one_hot(private$y)
-            # Déduire de la matrice one hot la colonne correspondant à la modalité de référence
-            self$modalite_ref <- colnames(private$y)[which.max(colSums(private$y))]
-            # Enlever les caractères .data_ de la variable self$modalite_ref
-            self$modalite_ref <- gsub(".data_", "", self$modalite_ref)
+            # La modalité de référence est celle qui n'est pas dans les colonnes de private$y
+            y_modalites <- gsub(".data_", "", colnames(private$y))
+            self$modalite_ref <- setdiff(self$modalites_cible, y_modalites)
         },
 
         ########################################
@@ -204,13 +203,13 @@ cible <- "Workout_Type"
 LogisticRegression1 <- LogisticRegression$new(data, cible)
 
 # Affichage d'une variable publique
-print(LogisticRegression1$nb_modalites_cible)
+# print(LogisticRegression1$nb_modalites_cible)
 
 # Affichage d'un résumé grâce à la méthode print
 LogisticRegression1$print()
 
 # Modélisation
-# LogisticRegression1$fit()
+LogisticRegression1$fit()
 
 # LogisticRegression1$predict()
 # LogisticRegression1$predict_proba()

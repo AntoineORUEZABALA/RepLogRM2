@@ -145,7 +145,7 @@ LogisticRegression <- R6Class("LogisticRegression",
         ########################################
         # Procédure print ######################
         ########################################
-        printa = function() {
+        print = function() {
             print(paste0("Les données comportent ", nrow(self$data), " observations et ", ncol(self$data), " variables"))
             print(paste0("La variable cible est '", self$cible, "' avec ", self$nb_modalites_cible, " modalités"))
             print(paste0("La modalité de référence est '", self$modalite_ref, "'"))
@@ -207,10 +207,10 @@ LogisticRegression1 <- LogisticRegression$new(data, cible)
 print(LogisticRegression1$nb_modalites_cible)
 
 # Affichage d'un résumé grâce à la méthode print
-LogisticRegression1$printa()
+LogisticRegression1$print()
 
 # Modélisation
-LogisticRegression1$fit()
+# LogisticRegression1$fit()
 
 # LogisticRegression1$predict()
 # LogisticRegression1$predict_proba()

@@ -10,70 +10,80 @@ LogisticRegression <- R6Class("LogisticRegression",
 
     # Attributs publics
     public = list(
+        nb_modalites_cible = NULL,
+        cible = NULL,
+        data = NULL,
+        modalite_ref = NULL,
 
         # Constructeur
-        initialize = function() {
-            # Vide
-        },
-
-        ########################################
-        # Méthode fit ##########################
-        ########################################
-        fit = function(X, cible) {
+        initialize = function(data, cible) {
+            self$data <- data
+            self$cible <- cible
             # Vérifications ##########################
             # X doit être un data.frame
-            check_type(X, "data.frame")
+            check_type(self$data, "data.frame")
 
             # y doit être un vecteur ou un character
-            check_type(cible, "character")
+            check_type(self$cible, "character")
 
             # La cible doit être présente dans les données
-            if (!cible %in% colnames(X)) {
-                stop("La variable ", cible, " doit être présente dans le dataframe")
+            if (!self$cible %in% colnames(self$data)) {
+                stop("La variable ", self$cible, " doit être présente dans le dataframe")
             }
 
             # Les données de la cible doivent être de type catégorielle (character ou factor)
-            if (!is.character(X[[cible]]) && !is.factor(X[[cible]])) {
+            if (!is.character(self$data[[self$cible]]) && !is.factor(self$data[[self$cible]])) {
                 stop("La variable cible doit être de type character ou factor")
             }
 
             # Il faut au moins deux modalités pour la variable cible
-            if (length(unique(X[[cible]])) < 2) {
+            if (length(unique(self$data[[self$cible]])) < 2) {
                 stop("La variable cible doit avoir au moins deux modalités")
             }
 
             # Séparation en deux jeux ##########################
             # Extraction de la variable cible
-            y <- X[[cible]]
+            private$y <- self$data[[self$cible]]
             # Comptage du nombre de modalités de la cible
-            nb_modalites_cible <- length(unique(y))
+            self$nb_modalites_cible <- length(unique(self$data[[self$cible]]))
 
             # On enlève la cible des variables explicatives
-            X[[cible]] <- NULL
+            self$data[[self$cible]] <- NULL
 
             # Pré-traitement ##########################
             # Variables explicatives
-            X <- private$preprocess_data(X)
+            private$X <- private$preprocess_data(self$data)
 
             # Variable cible
             # création d'une matrice one hot
-            y <- encodage_one_hot(y)
+            private$y <- encodage_one_hot(private$y)
+            # Déduire de la matrice one hot la colonne correspondant à la modalité de référence
+            self$modalite_ref <- colnames(private$y)[which.max(colSums(private$y))]
+            # Enlever les caractères .data_ de la variable self$modalite_ref
+            self$modalite_ref <- gsub(".data_", "", self$modalite_ref)
+        },
 
+        ########################################
+        # Méthode fit ##########################
+        ########################################
+        fit = function() {
             # Régression ##########################
             # Entraînement du modèle
-            taux_apprentissage <- 0.0001
+            taux_apprentissage <- 0.00001
             num_iters <- 10000
-            theta <- rep(0, ncol(X))
+            theta <- rep(0, ncol(private$X))
 
             # Convertir X, y et theta en matrice pour pouvoir la multiplier avec theta
             # dans les fonctions de coût et de gradient
-            X <- as.matrix(X)
-            y <- as.matrix(y)
+            # print(X)
+            X <- as.matrix(private$X)
+            y <- as.matrix(private$y)
             theta <- as.matrix(theta)
 
             # Cas modalité binaire
-            if (nb_modalites_cible == 2) {
+            if (self$nb_modalites_cible == 2) {
                 # Cas binaire
+                print("Binary classification")
                 result <- gradient_descent(X, y, theta, taux_apprentissage, num_iters)
 
                 # Récupération des résultats
@@ -134,8 +144,10 @@ LogisticRegression <- R6Class("LogisticRegression",
         ########################################
         # Procédure print ######################
         ########################################
-        print = function() {
-            print("Hello, je suis la procédure print ! je renvoie des infos succintes sur le modèle")
+        printa = function() {
+            print(paste0("Les données comportent ", nrow(self$data), " observations et ", ncol(self$data), " variables"))
+            print(paste0("La variable cible est '", self$cible, "' avec ", self$nb_modalites_cible, " modalités"))
+            print(paste0("La modalité de référence est '", self$modalite_ref, "'"))
         },
 
         ########################################
@@ -148,6 +160,10 @@ LogisticRegression <- R6Class("LogisticRegression",
 
     # Attributs privés
     private = list(
+
+        # Variables privées
+        X = NULL,
+        y = NULL,
 
         # Fonction de prétraitement des données
         preprocess_data = function(data) {
@@ -174,17 +190,27 @@ LogisticRegression <- R6Class("LogisticRegression",
 # Chargement des données depuis les fichiers csv train et test
 # Définir le répertoire par défaut comme celui où se situe le programme R
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
 data <- read.csv("datasets/gym_members_exercise_tracking.csv")
-
+data <- read.csv("datasets/ricco.csv")
 cible <- "Workout_Type"
-
 cible <- "Gender"
+cible <- "type"
+
 
 # utilisation de LogisticRegression
-LogisticRegression1 <- LogisticRegression$new()
-# Afficher les informations renvoyées par la méthode fit
-LogisticRegression1$fit(data, cible)
-# LogisticRegression1$fit(data, cible)
+# Instanciation de la classe LogisticRegression
+LogisticRegression1 <- LogisticRegression$new(data, cible)
+
+# Affichage d'une variable publique
+print(LogisticRegression1$nb_modalites_cible)
+
+# Affichage d'un résumé grâce à la méthode print
+LogisticRegression1$printa()
+
+# Modélisation
+LogisticRegression1$fit()
+
 # LogisticRegression1$predict()
 # LogisticRegression1$predict_proba()
 # LogisticRegression1$summary()

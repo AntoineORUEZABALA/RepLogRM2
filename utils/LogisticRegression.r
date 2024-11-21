@@ -5,19 +5,7 @@ sigmoid <- function(x) {
 
 # Fonction d'hypothèse
 hypothesis <- function(X, theta) {
-    tryCatch(
-        {
-            z <- X %*% theta
-        },
-        error = function(e) {
-            print(dim(X))
-            print(dim(theta))
-            if (grepl("requires numeric/complex matrix/vector arguments", e$message)) {
-                message("Debug: Ensure that 'X' and 'theta' are numeric matrices or vectors.")
-            }
-            stop(e)
-        }
-    )
+    z <- X %*% theta
     return(sigmoid(z))
 }
 
@@ -48,11 +36,11 @@ gradient <- function(X, y, theta) {
 # Descente de gradient pour la régression logistique
 gradient_descent <- function(X, y, theta, learning_rate, n_iterations) {
     # Nombre de pas à prendre en compte pour l'historique
-    pas_historique <- 100
+    pas_historique <- 1000
     cost_history <- numeric()
     for (i in 1:n_iterations) {
         theta <- theta - learning_rate * gradient(X, y, theta)
-        if (i %% (n_iterations / 100) == 0) {
+        if (i %% (n_iterations / pas_historique) == 0) {
             cost <- cost_function(X, y, theta)
             cat("Itération", i, "- Coût:", cost, "\n")
             cost_history <- c(cost_history, cost)

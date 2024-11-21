@@ -5,7 +5,19 @@ sigmoid <- function(x) {
 
 # Fonction d'hypothèse
 hypothesis <- function(X, theta) {
-    z <- as.matrix(X) %*% theta
+    tryCatch(
+        {
+            z <- X %*% theta
+        },
+        error = function(e) {
+            print(dim(X))
+            print(dim(theta))
+            if (grepl("requires numeric/complex matrix/vector arguments", e$message)) {
+                message("Debug: Ensure that 'X' and 'theta' are numeric matrices or vectors.")
+            }
+            stop(e)
+        }
+    )
     return(sigmoid(z))
 }
 
@@ -17,6 +29,16 @@ cost <- function(X, y, theta) {
     return(cost)
 }
 
+# Fonction de coût pour la régression logistique binaire
+cost_function <- function(X, y, theta) {
+    m <- nrow(X)
+    h <- hypothesis(X, theta)
+    # Ajout d'un petit epsilon pour éviter les NaN
+    epsilon <- 1e-15
+    cost <- (-1 / m) * sum(y * log(h + epsilon) + (1 - y) * log(1 - h + epsilon))
+    return(cost)
+}
+
 # Fonction de gradient pour la régression logistique
 gradient <- function(X, y, theta) {
     m <- nrow(X)
@@ -25,13 +47,18 @@ gradient <- function(X, y, theta) {
 
 # Descente de gradient pour la régression logistique
 gradient_descent <- function(X, y, theta, learning_rate, n_iterations) {
+    # Nombre de pas à prendre en compte pour l'historique
+    pas_historique <- 100
+    cost_history <- numeric()
     for (i in 1:n_iterations) {
         theta <- theta - learning_rate * gradient(X, y, theta)
-        if (i %% 100 == 0) {
-            cat("Itération", i, "- Coût:", cost(X, y, theta), "\n")
+        if (i %% (n_iterations / 100) == 0) {
+            cost <- cost_function(X, y, theta)
+            cat("Itération", i, "- Coût:", cost, "\n")
+            cost_history <- c(cost_history, cost)
         }
     }
-    return(theta)
+    return(list(theta = theta, cost_history = cost_history))
 }
 
 # One vs Rest
@@ -42,7 +69,8 @@ one_vs_rest <- function(X, y, learning_rate, n_iterations) {
     theta <- matrix(0, nrow = n, ncol = K)
     for (k in 1:K) {
         y_k <- y == k
-        theta[, k] <- gradient_descent(X, y_k, theta[, k], learning_rate, n_iterations)
+        theta_result <- gradient_descent(X, y_k, theta[, k], learning_rate, n_iterations)
+        theta[, k] <- theta_result$theta
     }
     return(theta)
 }
@@ -52,14 +80,17 @@ one_vs_one <- function(X, y, learning_rate, n_iterations) {
     m <- nrow(X)
     n <- ncol(X)
     K <- length(unique(y))
-    theta <- matrix(0, nrow = n, ncol = K)
+    theta_list <- list()
     for (i in 1:(K - 1)) {
         for (j in (i + 1):K) {
-            y_ij <- (y == i) | (y == j)
-            theta[, i] <- gradient_descent(X, y_ij, theta[, i], learning_rate, n_iterations)
+            y_ij <- y[y == i | y == j]
+            X_ij <- X[y == i | y == j, ]
+            theta_init <- rep(0, n)
+            theta_result <- gradient_descent(X_ij, y_ij, theta_init, learning_rate, n_iterations)
+            theta_list[[paste(i, j, sep = "_")]] <- theta_result$theta
         }
     }
-    return(theta)
+    return(theta_list)
 }
 
 # Descente de gradient Softmax

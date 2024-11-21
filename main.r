@@ -45,6 +45,8 @@ LogisticRegression <- R6Class("LogisticRegression",
             # Séparation en deux jeux ##########################
             # Extraction de la variable cible
             y <- X[[cible]]
+            # Comptage du nombre de modalités de la cible
+            nb_modalites_cible <- length(unique(y))
 
             # On enlève la cible des variables explicatives
             X[[cible]] <- NULL
@@ -52,51 +54,46 @@ LogisticRegression <- R6Class("LogisticRegression",
             # Pré-traitement ##########################
             # Variables explicatives
             X <- private$preprocess_data(X)
-            X <- as.matrix(X)
 
             # Variable cible
             # création d'une matrice one hot
             y <- encodage_one_hot(y)
-            # transformer en matrice numérique
-            y <- as.matrix(y)
-            print(class(y))
-            print(dim(y))
 
             # Régression ##########################
             # Entraînement du modèle
-            taux_apprentissage <- 0.01
+            taux_apprentissage <- 0.0001
             num_iters <- 10000
-            nb_modalites_cible <- ncol(y)
             theta <- rep(0, ncol(X))
 
-            # Convertir X et theta en matrice pour pouvoir la multiplier avec theta
+            # Convertir X, y et theta en matrice pour pouvoir la multiplier avec theta
             # dans les fonctions de coût et de gradient
             X <- as.matrix(X)
+            y <- as.matrix(y)
             theta <- as.matrix(theta)
-            print(class(X))
-            print(dim(X))
-            print(class(theta))
-            print(dim(theta))
 
             # Cas modalité binaire
             if (nb_modalites_cible == 2) {
                 # Cas binaire
                 result <- gradient_descent(X, y, theta, taux_apprentissage, num_iters)
+
+                # Récupération des résultats
                 theta <- result$theta
-                J_history <- result$J_history
+                cost_history <- result$cost_history
 
                 # Création du dataframe avec les coefficients
                 coef_df <- data.frame(
                     Variable = colnames(X),
-                    Coefficient = theta
+                    Coefficient = as.numeric(theta)
                 )
 
-                # Tri par valeur absolue des coefficients
+                # Tri par valeur absolue et affichage des coefficients
                 coef_df$Abs_Coefficient <- abs(coef_df$Coefficient)
                 coef_df <- coef_df[order(-coef_df$Abs_Coefficient), ]
-
                 print("\nCoefficients for each variable:")
                 print(coef_df[, c("Variable", "Coefficient")])
+
+                # Affichage d'un graphique montrant l'évolution du coût
+                plot(cost_history, type = "l", xlab = "Iteration", ylab = "Cost", main = "Cost evolution during training")
             } else {
                 # Cas modalités > 2
                 thetas_multiclass <- one_vs_rest(X, y, taux_apprentissage, num_iters)
@@ -178,7 +175,9 @@ LogisticRegression <- R6Class("LogisticRegression",
 # Définir le répertoire par défaut comme celui où se situe le programme R
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 data <- read.csv("datasets/gym_members_exercise_tracking.csv")
+
 cible <- "Workout_Type"
+
 cible <- "Gender"
 
 # utilisation de LogisticRegression

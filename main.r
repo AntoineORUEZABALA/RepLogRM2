@@ -125,13 +125,6 @@ LogisticRegression <- R6Class("LogisticRegression",
                 plot(cost_history, type = "l", xlab = "Iteration", ylab = "Cost", main = "Cost evolution during training")
             } else {
                 # Cas modalités > 2
-                result <- stable_gradient_descent_multinomial(X, y, theta, taux_apprentissage, num_iters)
-                print(result)
-
-                # Récupération des résultats
-                thetas_multiclass <- thetas_multiclass$theta
-                print(thetas_multiclass)
-
                 thetas_multiclass <- one_vs_rest(X, y, taux_apprentissage, num_iters)
                 predictions_multiclass <- predict_multiclass(X, thetas_multiclass)
 

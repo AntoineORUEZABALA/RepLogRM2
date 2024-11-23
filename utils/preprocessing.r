@@ -57,6 +57,8 @@ normaliser <- function(data, methode = "z-score") {
 # Encodage one hot
 encodage_one_hot <- function(data) {
     # Encodage one-hot des variables catégorielles
+    # Remove_first_dummy = TRUE pour éviter la colinéarité
+    # Remove_selected_columns = TRUE pour supprimer les colonnes originales
     data <- dummy_cols(data, remove_first_dummy = TRUE, remove_selected_columns = TRUE)
     return(data)
 }

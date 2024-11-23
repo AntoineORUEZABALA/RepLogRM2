@@ -3,24 +3,22 @@ sigmoid <- function(x) {
     return(1 / (1 + exp(-x)))
 }
 
+# Fonction pour calculer le softmax
+softmax <- function(x) {
+    exp_x <- exp(x - max(x))
+    exp_x / sum(exp_x)
+}
+
 # Fonction d'hypothèse
-hypothesis <- function(X, theta) {
+hypothese <- function(X, theta) {
     z <- X %*% theta
     return(sigmoid(z))
 }
 
-# Fonction de coût pour la régression logistique binaire
-cost <- function(X, y, theta) {
+# Fonction de coût pour la régression logistique
+cout <- function(X, y, theta) {
     m <- nrow(X)
-    h <- hypothesis(X, theta)
-    cost <- (-1 / m) * sum(y * log(h) + (1 - y) * log(1 - h))
-    return(cost)
-}
-
-# Fonction de coût pour la régression logistique binaire
-cost_function <- function(X, y, theta) {
-    m <- nrow(X)
-    h <- hypothesis(X, theta)
+    h <- hypothese(X, theta)
     # Ajout d'un petit epsilon pour éviter les NaN
     epsilon <- 1e-15
     cost <- (-1 / m) * sum(y * log(h + epsilon) + (1 - y) * log(1 - h + epsilon))
@@ -30,26 +28,26 @@ cost_function <- function(X, y, theta) {
 # Fonction de gradient pour la régression logistique
 gradient <- function(X, y, theta) {
     m <- nrow(X)
-    return(1 / m * t(X) %*% (hypothesis(X, theta) - y))
+    return(1 / m * t(X) %*% (hypothese(X, theta) - y))
 }
 
 # Descente de gradient pour la régression logistique
 gradient_descent <- function(X, y, theta, learning_rate, n_iterations) {
     # Nombre de pas à prendre en compte pour l'historique
     pas_historique <- 1000
-    cost_history <- numeric()
+    historique_cout <- numeric()
     for (i in 1:n_iterations) {
         theta <- theta - learning_rate * gradient(X, y, theta)
         if (i %% (n_iterations / pas_historique) == 0) {
-            cost <- cost_function(X, y, theta)
-            cat("Itération", i, "- Coût:", cost, "\n")
-            cost_history <- c(cost_history, cost)
+            cost <- cout(X, y, theta)
+            # cat("Itération", i, "- Coût:", cost, "\n")
+            historique_cout <- c(historique_cout, cost)
         }
     }
-    return(list(theta = theta, cost_history = cost_history))
+    return(list(theta = theta, historique_cout = historique_cout))
 }
 
-# One vs Rest Linh Nhi
+# One vs Rest
 one_vs_rest <- function(X, y, learning_rate, n_iterations) {
     m <- nrow(X)
     n <- ncol(X)
@@ -82,12 +80,6 @@ one_vs_one <- function(X, y, learning_rate, n_iterations) {
     return(theta_list)
 }
 
-# Descente de gradient Softmax
-softmax <- function(x) {
-    exp_x <- exp(x)
-    return(exp_x / sum(exp_x))
-}
-
 # Multinomial Logistic Regression
 multinomial_logistic_regression <- function(X, y, learning_rate, n_iterations) {
     m <- nrow(X)
@@ -105,7 +97,7 @@ multinomial_logistic_regression <- function(X, y, learning_rate, n_iterations) {
 
 # Fonction de prédiction
 predict <- function(X, theta) {
-    return(apply(X, 1, function(x) which.max(hypothesis(x, theta))))
+    return(apply(X, 1, function(x) which.max(hypothese(x, theta))))
 }
 
 # Prédiction multiclasse

@@ -1,4 +1,10 @@
+# Suppression des variables de l'environnement
 rm(list = ls())
+
+# Définir le répertoire par défaut comme celui où se situe le programme R
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+# Importation des librairies
 library(R6)
 source("utils/utils.r")
 source("utils/preprocessing.r")
@@ -10,11 +16,19 @@ LogisticRegression <- R6Class("LogisticRegression",
 
     # Attributs publics
     public = list(
+        # La liste des modalités de la variable cible
         modalites_cible = NULL,
+        # Le nombre de modalités de la variable cible
         nb_modalites_cible = NULL,
+        # La modalité de référence, celle qui n'apparaît pas dans la matrice one-hot
+        modalite_ref_cible = NULL,
+        # La variable cible
         cible = NULL,
+        # Les données
         data = NULL,
-        modalite_ref = NULL,
+        # Type de régression logistique
+        type_regression = NULL,
+
 
         # Constructeur
         initialize = function(data, cible) {
@@ -48,6 +62,12 @@ LogisticRegression <- R6Class("LogisticRegression",
             # Modalités de la cible
             self$modalites_cible <- levels(as.factor(private$y))
             self$nb_modalites_cible <- length(unique(self$data[[self$cible]]))
+            # Type de régression logistique
+            if (self$nb_modalites_cible == 2) {
+                self$type_regression <- "Régression logistique binaire"
+            } else {
+                self$type_regression <- "Régression logistique multinomiale"
+            }
 
             # On enlève la cible des variables explicatives
             self$data[[self$cible]] <- NULL
@@ -61,7 +81,7 @@ LogisticRegression <- R6Class("LogisticRegression",
             private$y <- encodage_one_hot(private$y)
             # La modalité de référence est celle qui n'est pas dans les colonnes de private$y
             y_modalites <- gsub(".data_", "", colnames(private$y))
-            self$modalite_ref <- setdiff(self$modalites_cible, y_modalites)
+            self$modalite_ref_cible <- setdiff(self$modalites_cible, y_modalites)
         },
 
         ########################################
@@ -83,7 +103,6 @@ LogisticRegression <- R6Class("LogisticRegression",
             # Cas modalité binaire
             if (self$nb_modalites_cible == 2) {
                 # Cas binaire
-                print("Binary classification")
                 result <- gradient_descent(X, y, theta, taux_apprentissage, num_iters)
 
                 # Récupération des résultats
@@ -99,17 +118,24 @@ LogisticRegression <- R6Class("LogisticRegression",
                 # Tri par valeur absolue et affichage des coefficients
                 coef_df$Abs_Coefficient <- abs(coef_df$Coefficient)
                 coef_df <- coef_df[order(-coef_df$Abs_Coefficient), ]
-                print("\nCoefficients for each variable:")
+                print("\nCoefficients :")
                 print(coef_df[, c("Variable", "Coefficient")])
 
                 # Affichage d'un graphique montrant l'évolution du coût
                 plot(cost_history, type = "l", xlab = "Iteration", ylab = "Cost", main = "Cost evolution during training")
             } else {
                 # Cas modalités > 2
+                result <- stable_gradient_descent_multinomial(X, y, theta, taux_apprentissage, num_iters)
+                print(result)
+
+                # Récupération des résultats
+                thetas_multiclass <- thetas_multiclass$theta
+                print(thetas_multiclass)
+
                 thetas_multiclass <- one_vs_rest(X, y, taux_apprentissage, num_iters)
                 predictions_multiclass <- predict_multiclass(X, thetas_multiclass)
 
-                # Création du dataframe avec les coefficients Linh Nhi
+                # Création du dataframe avec les coefficients
                 coef_df <- as.data.frame(t(thetas_multiclass))
                 names(coef_df) <- colnames(X) # Les noms des variables explicatives
                 rownames(coef_df) <- self$modalites_cible[-1] # Les noms des classes automatiquement récupérés
@@ -147,7 +173,7 @@ LogisticRegression <- R6Class("LogisticRegression",
         print = function() {
             print(paste0("Les données comportent ", nrow(self$data), " observations et ", ncol(self$data), " variables"))
             print(paste0("La variable cible est '", self$cible, "' avec ", self$nb_modalites_cible, " modalités"))
-            print(paste0("La modalité de référence est '", self$modalite_ref, "'"))
+            print(paste0("La modalité de référence est '", self$modalite_ref_cible, "'"))
         },
 
         ########################################
@@ -188,9 +214,6 @@ LogisticRegression <- R6Class("LogisticRegression",
 )
 
 # Chargement des données depuis les fichiers csv train et test
-# Définir le répertoire par défaut comme celui où se situe le programme R
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-
 data <- read.csv("datasets/gym_members_exercise_tracking.csv")
 # data <- read.csv("datasets/ricco.csv")
 cible <- "Workout_Type"

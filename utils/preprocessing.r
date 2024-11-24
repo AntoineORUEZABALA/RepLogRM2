@@ -1,5 +1,6 @@
 # Fonctions utilitaires de prétraitement
 library(fastDummies)
+library(caret)
 
 # Imputation
 imputer_numeriques <- function(data, methode = "moyenne") {
@@ -39,21 +40,6 @@ imputer_categorielles <- function(data, methode = "mode") {
     return(data)
 }
 
-# Normalisation
-normaliser <- function(data, methode = "z-score") {
-    # Normalisation/standardisation des données
-    if (methode == "z-score") {
-        for (col in names(data)) {
-            if (is.numeric(data[[col]])) {
-                data[[col]] <- scale(data[[col]])
-            }
-        }
-    } else {
-        stop("Méthode de normalisation non reconnue")
-    }
-    return(data)
-}
-
 # Encodage one hot
 encodage_one_hot <- function(data) {
     # Encodage one-hot des variables catégorielles
@@ -61,4 +47,21 @@ encodage_one_hot <- function(data) {
     # Remove_selected_columns = TRUE pour supprimer les colonnes originales
     data <- dummy_cols(data, remove_first_dummy = TRUE, remove_selected_columns = TRUE)
     return(data)
+}
+
+# Séparation train/test
+split_train_test <- function(data, cible, proportion = 0.8) {
+    index_train <- createDataPartition(
+        y = data[[cible]], # Variable sur laquelle la stratification est effectuée
+        p = proportion, # proportion pour l'ensemble d'entraînement
+        list = FALSE # Renvoyer une liste ou un vecteur d'indices
+    )
+
+    # Création des ensembles d'entraînement et de test
+    X_train <- data[index_train, -which(names(data) == cible)]
+    X_test <- data[-index_train, -which(names(data) == cible)]
+    y_train <- data[[cible]][index_train]
+    y_test <- data[[cible]][-index_train]
+
+    return(list(X_train = X_train, X_test = X_test, y_train = y_train, y_test = y_test))
 }

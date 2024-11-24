@@ -32,38 +32,44 @@ gradient <- function(X, y, theta) {
 }
 
 # Descente de gradient pour la régression logistique
-gradient_descent <- function(X, y, theta, learning_rate, n_iterations) {
-    # Nombre de pas à prendre en compte pour l'historique
-    pas_historique <- 1000
-    historique_cout <- numeric()
+gradient_descent <- function(X, y, theta, taux_apprentissage, n_iterations, tolerance) {
+    previous_cost <- Inf
+    cost_history <- numeric(n_iterations) # Vecteur pour stocker l'historique du coût
+
     for (i in 1:n_iterations) {
-        theta <- theta - learning_rate * gradient(X, y, theta)
-        if (i %% (n_iterations / pas_historique) == 0) {
-            cost <- cout(X, y, theta)
-            # cat("Itération", i, "- Coût:", cost, "\n")
-            historique_cout <- c(historique_cout, cost)
+        theta <- theta - taux_apprentissage * gradient(X, y, theta)
+        current_cost <- cout(X, y, theta)
+        cost_history[i] <- current_cost # Enregistrement du coût
+
+        # Vérifier si la diminution du coût est inférieure à la tolérance
+        if (abs(previous_cost - current_cost) < tolerance) {
+            cat("Convergence atteinte à l'itération", i, "\n")
+            cost_history <- cost_history[1:i] # Tronquer l'historique à l'itération courante
+            break
         }
+        previous_cost <- current_cost
     }
-    return(list(theta = theta, historique_cout = historique_cout))
+
+    return(list(theta = theta, cost_history = cost_history))
 }
 
 # One vs Rest
-one_vs_rest <- function(X, y, learning_rate, n_iterations) {
-    m <- nrow(X)
+one_vs_rest <- function(X, y, taux_apprentissage, n_iterations, tolerance) {
     n <- ncol(X)
-    K <- ncol(y) # k-1 classes (3 dans ce cas)
+    K <- ncol(y) # k-1 classes
+
     theta <- matrix(0, nrow = n, ncol = K)
 
     for (k in 1:K) {
         y_k <- as.matrix(y[, k]) # Sélection de la classe k
-        theta_result <- gradient_descent(X, y_k, rep(0, n), learning_rate, n_iterations)
+        theta_result <- gradient_descent(X, y_k, rep(0, n), taux_apprentissage, n_iterations, tolerance)
         theta[, k] <- theta_result$theta
     }
     return(theta)
 }
 
 # One vs One
-one_vs_one <- function(X, y, learning_rate, n_iterations) {
+one_vs_one <- function(X, y, taux_apprentissage, n_iterations, tolerance) {
     m <- nrow(X)
     n <- ncol(X)
     K <- length(unique(y))
@@ -73,7 +79,7 @@ one_vs_one <- function(X, y, learning_rate, n_iterations) {
             y_ij <- y[y == i | y == j]
             X_ij <- X[y == i | y == j, ]
             theta_init <- rep(0, n)
-            theta_result <- gradient_descent(X_ij, y_ij, theta_init, learning_rate, n_iterations)
+            theta_result <- gradient_descent(X_ij, y_ij, theta_init, taux_apprentissage, n_iterations, tolerance)
             theta_list[[paste(i, j, sep = "_")]] <- theta_result$theta
         }
     }
@@ -96,7 +102,7 @@ multinomial_logistic_regression <- function(X, y, learning_rate, n_iterations) {
 }
 
 # Fonction de prédiction
-predict <- function(X, theta) {
+predict_simple <- function(X, theta) {
     return(apply(X, 1, function(x) which.max(hypothese(x, theta))))
 }
 

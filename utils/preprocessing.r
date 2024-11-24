@@ -1,5 +1,4 @@
 # Fonctions utilitaires de prétraitement
-library(fastDummies)
 library(caret)
 
 # Imputation
@@ -37,15 +36,6 @@ imputer_categorielles <- function(data, methode = "mode") {
     } else {
         stop("Méthode d'imputation non reconnue")
     }
-    return(data)
-}
-
-# Encodage one hot
-encodage_one_hot <- function(data) {
-    # Encodage one-hot des variables catégorielles
-    # Remove_first_dummy = TRUE pour éviter la colinéarité
-    # Remove_selected_columns = TRUE pour supprimer les colonnes originales
-    data <- dummy_cols(data, remove_first_dummy = TRUE, remove_selected_columns = TRUE)
     return(data)
 }
 

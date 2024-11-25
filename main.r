@@ -120,10 +120,12 @@ LogisticRegression <- R6Class("LogisticRegression",
             # Fin de pré-traitement pour X ################################
 
             # Pré-traitement pour y ######################################
-            # Encodage en matrice de classes
-            dummy_model_y <- dummyVars(" ~ .", data = data.frame(y = private$y_train), fullRank = TRUE)
-            private$y_train <- as.matrix(predict(dummy_model_y, data.frame(y = private$y_train)))
-            private$y_test <- as.matrix(predict(dummy_model_y, data.frame(y = private$y_test)))
+            # Encodage de la variable cible
+            private$y_train <- as.factor(private$y_train)
+            private$y_test <- as.factor(private$y_test)
+            # Conversion des facteurs en numérique (0-based)
+            private$y_train <- as.numeric(private$y_train) - 1
+            private$y_test <- as.numeric(private$y_test) - 1
             # Fin de pré-traitement pour y ################################
         },
 
@@ -137,11 +139,11 @@ LogisticRegression <- R6Class("LogisticRegression",
             n_iterations <- 20000
             tolerance <- 1e-6
 
-            theta <- matrix(0, nrow = ncol(private$X_train), ncol = ncol(private$y_train))
+
 
             if (self$nb_modalites_cible == 2) {
                 # Cas modalité binaire
-                result <- gradient_descent(private$X_train, private$y_train, theta, taux_apprentissage, n_iterations, tolerance)
+                result <- descente_gradient(X = private$X_train, y = private$y_train, taux_apprentissage = taux_apprentissage, n_iterations = n_iterations, tolerance = tolerance)
 
                 # Récupération des résultats
                 theta <- result$theta
@@ -172,8 +174,10 @@ LogisticRegression <- R6Class("LogisticRegression",
                     warning("Cost history contains non-finite values, unable to plot.")
                 }
             } else {
+                theta <- matrix(0, nrow = ncol(private$X_train), ncol = self$nb_modalites_cible)
                 # Cas modalités > 2
                 thetas_multiclass <- one_vs_rest(private$X_train, private$y_train, taux_apprentissage, n_iterations, tolerance)
+                # thetas_multiclass <- multinomial_logistic_ovr(private$X_train, private$y_train, max_iter = 1000, learning_rate = 0.01)
                 predictions_multiclass <- predict_multiclass(private$X_train, thetas_multiclass)
 
                 # Création du dataframe avec les coefficients
@@ -269,9 +273,11 @@ LogisticRegression <- R6Class("LogisticRegression",
 # Chargement des données depuis les fichiers csv train et test
 data <- read.csv("datasets/gym_members_exercise_tracking.csv")
 # data <- read.csv("datasets/ricco.csv")
+data <- read.csv("datasets/iris.csv")
 cible <- "Workout_Type"
 cible <- "Gender"
 # cible <- "type"
+cible <- "variety"
 
 
 # utilisation de LogisticRegression

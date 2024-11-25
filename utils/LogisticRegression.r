@@ -15,9 +15,9 @@ hypothese <- function(X, theta) {
     return(sigmoid(z))
 }
 
-# Fonction de coût pour la régression logistique
+# Fonction de coût pour la régression logistique avec cross entropy
 cout <- function(X, y, theta) {
-    m <- nrow(X)
+    m <- length(y)
     h <- hypothese(X, theta)
     # Ajout d'un petit epsilon pour éviter les NaN
     epsilon <- 1e-15
@@ -25,29 +25,24 @@ cout <- function(X, y, theta) {
     return(cost)
 }
 
-# Fonction de gradient pour la régression logistique
-gradient <- function(X, y, theta) {
-    m <- nrow(X)
-    return(1 / m * t(X) %*% (hypothese(X, theta) - y))
-}
-
 # Descente de gradient pour la régression logistique
-gradient_descent <- function(X, y, theta, taux_apprentissage, n_iterations, tolerance) {
-    previous_cost <- Inf
+descente_gradient <- function(X, y, taux_apprentissage, n_iterations, tolerance) {
     cost_history <- numeric(n_iterations) # Vecteur pour stocker l'historique du coût
 
-    for (i in 1:n_iterations) {
-        theta <- theta - taux_apprentissage * gradient(X, y, theta)
-        current_cost <- cout(X, y, theta)
-        cost_history[i] <- current_cost # Enregistrement du coût
+    m <- length(y)
+    theta <- rep(0, ncol(X))
 
-        # Vérifier si la diminution du coût est inférieure à la tolérance
-        if (abs(previous_cost - current_cost) < tolerance) {
-            cat("Convergence atteinte à l'itération", i, "\n")
-            cost_history <- cost_history[1:i] # Tronquer l'historique à l'itération courante
+    for (i in 1:n_iterations) {
+        h <- hypothese(X, theta)
+        gradient <- 1 / m * t(X) %*% (h - y)
+        theta <- theta - taux_apprentissage * gradient
+        cost_history[i] <- cout(X, y, theta) # Enregistrement du coût
+
+        # Vérifier la tolérance pour arrêter les itérations
+        if (i > 2 && abs(cost_history[i] - cost_history[i - 1]) < tolerance) {
+            cost_history <- cost_history[1:i]
             break
         }
-        previous_cost <- current_cost
     }
 
     return(list(theta = theta, cost_history = cost_history))
@@ -56,13 +51,13 @@ gradient_descent <- function(X, y, theta, taux_apprentissage, n_iterations, tole
 # One vs Rest
 one_vs_rest <- function(X, y, taux_apprentissage, n_iterations, tolerance) {
     n <- ncol(X)
-    K <- ncol(y) # k-1 classes
+    K <- length(unique(y))
 
     theta <- matrix(0, nrow = n, ncol = K)
 
     for (k in 1:K) {
         y_k <- as.matrix(y[, k]) # Sélection de la classe k
-        theta_result <- gradient_descent(X, y_k, rep(0, n), taux_apprentissage, n_iterations, tolerance)
+        theta_result <- descente_gradient(X, y_k, rep(0, n), taux_apprentissage, n_iterations, tolerance)
         theta[, k] <- theta_result$theta
     }
     return(theta)
@@ -79,7 +74,7 @@ one_vs_one <- function(X, y, taux_apprentissage, n_iterations, tolerance) {
             y_ij <- y[y == i | y == j]
             X_ij <- X[y == i | y == j, ]
             theta_init <- rep(0, n)
-            theta_result <- gradient_descent(X_ij, y_ij, theta_init, taux_apprentissage, n_iterations, tolerance)
+            theta_result <- descente_gradient(X_ij, y_ij, theta_init, taux_apprentissage, n_iterations, tolerance)
             theta_list[[paste(i, j, sep = "_")]] <- theta_result$theta
         }
     }
@@ -91,6 +86,9 @@ multinomial_logistic_regression <- function(X, y, learning_rate, n_iterations) {
     m <- nrow(X)
     n <- ncol(X)
     K <- length(unique(y))
+    print(n)
+    print(K)
+
     theta <- matrix(0, nrow = n, ncol = K)
     for (iter in 1:n_iterations) {
         scores <- as.matrix(sapply(X, as.numeric)) %*% theta

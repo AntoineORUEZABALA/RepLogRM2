@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Rapport sur package R6 
+% Rapport sur package R6
 % Version 1 (14/11/2024)
 %
 % Auteurs :
@@ -16,6 +16,7 @@
 \documentclass[10pt,french]{report}
 
 \usepackage[frenchb]{babel}
+\usepackage[french=guillemets]{csquotes}
 
 \usepackage[utf8]{inputenc} % Saisir des caractères spéciaux et accentués
 \usepackage[T1]{fontenc} % Imprimer des caractères spéciaux et accentués
@@ -55,65 +56,172 @@
 %----------------------------------------------------------------------------------------
 
 \begin{document}
-	
+
 	\begin{titlepage}
 		\centering
 		{\Large\bfseries Université Lumière Lyon 2}\par
 		{\large Institut de la communication}\par\vspace{4.5cm}
-		
+
 		%\includegraphics[width=0.3\textwidth]{logo.png}\par\vspace{1cm}
-		
+
 		{\Huge\bfseries Librairie MIMOSA}\par\vspace{1cm}
 		{\huge\bfseries Mixed Input Multinomial Optimization for Statistical Analysis}\par\vspace{4.5cm}
-		
+
 		{\Large\itshape Par}\par
 		{\Large Linh Nhi Le Dinh}\par
 		{\Large Antoine Oruezabala}\par
 		{\Large Béranger Thomas}\par\vspace{1cm}
-		
+
 		{\large Supervisé par:}\par
 		{\large Ricco Rakotomalala}\par\vspace{1cm}
-		
+
 		{\large\itshape Rapport présenté dans le cadre du}\par
 		{\large Master 2 SISE - 2024/2025}\par\vspace{1cm}
-		
+
 		%{\large \today}
-		
+
 		\vfill
-		
+
 	\end{titlepage}
-	
+
 	\tableofcontents
-	
+
 	\setlength{\parskip}{12pt}
-	
+
 	\chapter{Éléments introductifs}
-	
+
+	\section{La régression logistique}
+
+	Quelle soit binaire (la variable cible possède deux modalités) ou multinomiale (la variable cible possède plus de deux modalités), le principe de la régression logistique est de maximiser la vraisemblance, ou pour le dire autrement, de minimiser la déviance.
+
+	Quel outil pour mesurer ce paramètre ? La log-vraisemblance.
+
+    \subsection{Notations}
+
+    Soit une population $\Omega$ de $n$ individus, définie par $J$ variables explicatives notées $\left\{X_{1}, \ldots,X_{J}\right\}$, et une variable cible $Y$ possédant $K$ valeurs :
+
+    \begin{tblr}{
+            colspec = {X[4,c]X[4,c]X[4,c]X[4,c]X[4,c]},
+            rowspec = {Q[m]Q[m]Q[m]Q[m]Q[m]},
+            rowsep = 5pt,
+            hlines,
+            vlines,
+        }
+        $\Omega$ & Cible & $X_{1}$ & $\ldots$ & $X_{J}$ \\
+        1 & $Y_{1}$ &  &  &  \\
+        $\ldots$ & $\ldots$ &  &  &  \\
+        $\omega$ & $Y_{\omega}$ & $X_{1}\left(\omega\right)$ & $\ldots$ & $X_{J}\left(\omega\right)$ \\
+        $\ldots$ & $\ldots$ &  &  &  \\
+        $n$ & $Y_{K}$ &  &  &  \\
+    \end{tblr}
+
+    Dans le cas binaire, la probabilité d'un individu $\omega$ d'être positif à priori se note $p$ par commodité, pour simplifier $p\left(\omega\right)$, lui-même une notation simplifiée de $P\left[Y\left(\omega\right)=+\right]$.
+
+    Toujours dans le cas binaire, la probabilité d'un individu $\omega$ d'être positif à posteriori, c'est-à-dire la probabilité que l'on modélisera en apprentissage supervisée, se note $\pi$ par commodité, pour simplifier $\pi\left(\omega\right)$, lui-même une notation simplifiée de $P\left[Y\left(\omega\right)=+/X\left(\omega\right)\right]$.
+
+    La fonction LOGIT pour cet individu $\omega$ est :
+
+    \begin{equation}
+        \text{LOGIT}(\omega) = \ln\left[\frac{\pi(\omega)}{1-\pi(\omega)}\right] = a_0 + a_1X_1\left(\omega\right) + \cdots + a_JX_J\left(\omega\right)
+    \end{equation}
+
+    Soit en écriture matricielle :
+
+    \begin{equation}
+        \ln\left[\frac{\pi(\omega)}{1-\pi(\omega)}\right] = X\left(\omega\right) \times a
+    \end{equation}
+
+    Avec $a_0, \ldots, a_J$ les paramètres que l'on souhaite estimer.
+
+	\subsection{Algorithmes}
+
+    Un algorithme utilisé pour optimiser la log-vraisemblance est celui de Newton-Raphson. Il s'agit d'une approche itérative, qui utilise la dérivée de la fonction considérée pour approcher une solution.
+
+    Il a toutefois pour défaut d'utiliser la matrice hessienne, qui peut être coûteuse en mémoire et temps de calcul.
+
+    Nous expliquerons et utiliserons un autre algorithme ici, la descente de gradient.
+
+    Il s'agit aussi d'un algorithme itératif, dont l'objectif est de trouver le minimum d'une fonction $f\left(x\right)$ en partant d'un point arbitraire $x_0$. On se \enquote{déplace} pour cela dans la direction opposée au gradient, c'est-à-dire que l'on \enquote{descend} le long de la pente.
+
+    Mathématiquement, on part d'une valeur arbitraire $x_0$, puis pour trouver $x_1$ on utilise la formule suivante :
+
+    \begin{equation}
+        x_{n+1} = x_n - \alpha \nabla f\left(x_n\right)
+    \end{equation}
+
+    Avec :
+    \begin{itemize}
+        \item $x_n$ la position actuelle,
+        \item $\alpha$ le taux d'apprentissage,
+        \item $\nabla f\left(x_n\right)$ le gradient de la fonction au point $x_n$
+    \end{itemize}
+
+    Les étapes sont donc les suivantes :
+    \begin{itemize}
+        \item choisir un point $x_0$ arbitraire pour commencer les calculs,
+        \item calculer le gradient à ce point,
+        \item mettre à jour la position en se déplaçant dans la direction opposée,
+        \item vérifier que l'on a atteint un critère d'arrêt :
+        \begin{itemize}
+            \item nombre d'itérations maximum atteint,
+            \item et/ou précision souhaitée (différence entre deux itérations) atteinte,
+        \end{itemize}
+    \end{itemize}
+
+	\subsection{Champs d'application}
+
+    La régression logistique n'émet pas d'hypothèse directement sur les distributions des probabilités $P\left(X/Y=+\right)$ et $P\left(X/Y=-\right)$, mais uniquement sur leur rapport.
+
+    Elle permet donc, en théorie, une application plus large, et est nommé semi-paramétrique, pour la différencier des modèles qui supposent une loi donnée sur la distribution des probabilités.
+
 	\section{Contexte}
-	
+
 	Ce document présente la régression logistique multinomiale, par le biais d'une descente de gradient, pour des données mixtes.
-	
+
 	\chapter{Étude du problème}
-	
+
+	\section{Colinéarité et codage disjonctif}
+
+	\subsection{Colinéarité}
+	Les problèmes de colinéarité ne se produisent que lorsque la distance euclidienne intervient dans l'algorithme de machine learning.
+
+	En régression logistique il est indispensable d'éviter ce souci.
+
+	Cela suppose de faire un codage disjonctif en enlevant une modalité.
+
+	\subsection{Cas binaire}
+
+	Dans ce cas, les coefficients qui seront indiqués se lisent en opposition à la modalité de référence, c'est-à-dire celle qui a été retirée.
+
+	Cela implique de devoir retrouver cette modalité après coup.
+
 	\chapter{Librairie développée}
-	
+
 	La librairie développé porte le doux nom de MIMOSA (Mixed Input Multinomial Optimization for Statistical Analysis).
-	
+
+	\section{Pré-traitements}
+
+	\subsection{Séparation en jeux train et test}
+
+	Enjeux : conserver la répartition des modalités de la variable cible (vérifier la cohérence des modalités).
+
+	Cela évite un one hot encoding qui ne créerait pas assez de colonnes (cas du jeu de test avec une modalité en moins par exemple).
+
 	\chapter{Lexique}
-	
+
 	\entreelex{Régression logistique}{La régression logistique vise à prédire la probabilité qu'un événement binaire se produise (oui/non, 1/0) en fonction de variables explicatives. Elle utilise une fonction logistique (ou sigmoïde) pour transformer la combinaison linéaire des variables indépendantes en une probabilité comprise entre 0 et 1.}
-	
+
 	\entreelex{Régression logistique multinomiale}{Extension de la régression logistique permettant de modéliser une variable qualitative à plus de deux modalités.
-	
+
 	Cette méthode permet d'estimer la probabilité d'appartenance à chacune des catégories en fonction de variables explicatives quantitatives et/ou qualitatives. Contrairement à la régression logistique binaire qui modélise une seule probabilité $p$, la régression logistique multinomiale estime simultanément les probabilités d'appartenance à toutes les catégories ($p_1, p_2, ..., p_K$), avec la contrainte que leur somme soit égale à 1.
-	
+
 	Le modèle utilise une transformation logistique généralisée qui garantit que les probabilités estimées restent comprises entre 0 et 1. Une catégorie est choisie comme référence, et le modèle estime les logarithmes des rapports de probabilités (log-odds) entre chaque catégorie et cette référence.
-	
+
 	Limites :
 	- Sensible à la multicolinéarité des variables explicatives
 	- Nécessite un échantillon suffisamment grand, particulièrement quand le nombre de catégories augmente
 	- Suppose l'indépendance des alternatives non pertinentes (IIA)}
-	
+
 	\entreelex{Descente de gradient}{La descente de gradient est un algorithme d’optimisation couramment utilisé pour entraîner les modèles de machine learning et les réseaux neuronaux. Ce type d’algorithme entraîne les modèles de machine learning par réduction des erreurs entre les résultats prédits et les résultats réels.\cube Le point de départ n'est qu'un point arbitraire qui nous permet d'évaluer les performances. À partir de ce point de départ, nous allons trouver la dérivée (ou la pente) et, à partir de là, nous pourrons utiliser une ligne tangente pour observer l'inclinaison de la pente. La pente renseigne sur les mises à jour des paramètres, c'est-à-dire les poids et les biais. La pente au point de départ est plus forte, mais au fur et à mesure que de nouveaux paramètres sont générés, elle devrait progressivement diminuer jusqu'à atteindre le point le plus bas de la courbe, dénommé point de convergence.\cube Comme pour trouver la ligne de meilleur ajustement dans la régression linéaire, l'objectif de la descente de gradient est de minimiser la fonction de coût, ou l'erreur entre y prédit et y réel. Pour ce faire, deux points de données sont nécessaires : une orientation et un taux d'apprentissage. Ces facteurs déterminent les calculs de dérivée partielle des itérations futures, ce qui lui permet d'atteindre progressivement le minimum local ou global (c'est-à-dire le point de convergence).. La fonction de perte dans la descente de gradient agit spécifiquement comme un baromètre, évaluant sa précision à chaque itération des mises à jour de paramètres. Jusqu'à ce que la fonction soit proche ou égale à zéro, le modèle continue à ajuster ses paramètres pour obtenir l'erreur la plus faible possible.\cube Il existe trois types d'algorithmes d'apprentissage par descente de gradient : la descente de gradient par lots, la descente de gradient stochastique et la descente de gradient par mini-lots.}
-	
+
 \end{document}

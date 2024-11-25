@@ -1,6 +1,15 @@
 \babel@toc {french}{}\relax 
 \contentsline {chapter}{\numberline {1}Éléments introductifs}{2}{}%
-\contentsline {section}{\numberline {1.1}Contexte}{2}{}%
-\contentsline {chapter}{\numberline {2}Étude du problème}{3}{}%
-\contentsline {chapter}{\numberline {3}Librairie développée}{4}{}%
-\contentsline {chapter}{\numberline {4}Lexique}{5}{}%
+\contentsline {section}{\numberline {1.1}La régression logistique}{2}{}%
+\contentsline {subsection}{\numberline {1.1.1}Notations}{2}{}%
+\contentsline {subsection}{\numberline {1.1.2}Algorithmes}{3}{}%
+\contentsline {subsection}{\numberline {1.1.3}Champs d'application}{4}{}%
+\contentsline {section}{\numberline {1.2}Contexte}{4}{}%
+\contentsline {chapter}{\numberline {2}Étude du problème}{5}{}%
+\contentsline {section}{\numberline {2.1}Colinéarité et codage disjonctif}{5}{}%
+\contentsline {subsection}{\numberline {2.1.1}Colinéarité}{5}{}%
+\contentsline {subsection}{\numberline {2.1.2}Cas binaire}{5}{}%
+\contentsline {chapter}{\numberline {3}Librairie développée}{6}{}%
+\contentsline {section}{\numberline {3.1}Pré-traitements}{6}{}%
+\contentsline {subsection}{\numberline {3.1.1}Séparation en jeux train et test}{6}{}%
+\contentsline {chapter}{\numberline {4}Lexique}{7}{}%

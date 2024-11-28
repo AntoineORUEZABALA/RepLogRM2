@@ -1,6 +1,7 @@
 library(R6)
 library(datasets)
-setwd("C:/Users/lledinh/Documents/CoursM2SISE/Programmation R") 
+library(nnet) 
+setwd("C:/Users/aoruezabal/Documents/GitHub/RepLogRM2") 
 
 LogisticRegression <- R6Class(
   "LogisticRegression",
@@ -13,14 +14,46 @@ LogisticRegression <- R6Class(
     reg_lambda = 0.01,
     tolerance = 1e-4,
     losses = NULL,
+    cible = NULL, 
+    data = NULL,
+    modalites_cible = NULL, 
+    nb_modalites_cible = NULL, 
+    modalite_ref_cible = NULL,
+    type_regression = NULL,
     
-    initialize = function(learning_rate = 0.01, max_iter = 1000, classification_type = "binary", regularization = NULL, reg_lambda = 0.01, tolerance = 1e-4) {
+    initialize= function(data, cible, learning_rate = 0.01, max_iter = 1000, classification_type = "binary", regularization = NULL, reg_lambda = 0.01, tolerance = 1e-4) {
+      self$data <- data
+      self$cible <- cible
       self$learning_rate <- learning_rate
       self$max_iter <- max_iter
       self$classification_type <- classification_type
       self$regularization <- regularization
       self$reg_lambda <- reg_lambda
       self$tolerance <- tolerance
+      
+      if (!is.data.frame(self$data)) {
+        stop("Les données '", self$data, "'' doivent être dans un dataframe")
+      }
+      if (!is.character(self$cible)) {
+        stop("La variable '", self$cible, "'' doit être un vecteur/character")
+      }
+      if (!self$cible %in% colnames(self$data)) {
+        stop("La variable '", self$cible, "'' doit être présente dans le dataframe")
+      }
+      if (!is.character(self$data[[self$cible]]) && !is.factor(self$data[[self$cible]])) {
+        stop("La variable cible doit être de type character ou factor")
+      }
+      if (length(unique(self$data[[self$cible]])) < 2) {
+        stop("La variable cible doit avoir au moins deux modalités")
+      }
+      self$modalites_cible <- levels(as.factor(self$data[[self$cible]]))
+      self$nb_modalites_cible <- length(self$modalites_cible)
+      if (self$nb_modalites_cible == 2) {
+        self$type_regression <- "Régression logistique binaire"
+      } else {
+        self$type_regression <- "Régression logistique multinomiale"
+      }
+      self$data <- self$data[!is.na(self$data[[self$cible]]), ]
     },
     
     sigmoid = function(z) {
@@ -84,43 +117,106 @@ LogisticRegression <- R6Class(
       self$weights <- matrix(rnorm((input_dim + 1) * num_classes), nrow = input_dim + 1, ncol = num_classes)
     },
     
-    fit = function(X_train, y_train) {
-      input_dim <- ncol(X_train)
-      num_classes <- if (self$classification_type == "binary") 1 else length(unique(y_train))
-      self$initialize_weights(input_dim, num_classes)
+    fit = function(X,y) {
+      taux_apprentissage <- 0.01
+      n_iterations <- 20000
+      tolerance <- 1e-6
       
-      self$losses <- c()
-      for (epoch in 1:self$max_iter) {
-        for (i in 1:nrow(X_train)) {
-          self$update_weights(X_train[i, , drop = FALSE], y_train[i])
+      if (self$nb_modalites_cible == 2) {
+        result <- descente_gradient(X, y, taux_apprentissage = taux_apprentissage, n_iterations = n_iterations, tolerance = tolerance)
+        
+        theta <- result$theta
+        cost_history <- result$cost_history
+        
+        coef_df <- data.frame(
+          Variable = colnames(X),
+          Coefficient = as.numeric(theta)
+        )
+        
+        coef_df$Abs_Coefficient <- abs(coef_df$Coefficient)
+        coef_df <- coef_df[order(-coef_df$Abs_Coefficient), ]
+        print("\nCoefficients :")
+        print(coef_df[, c("Variable", "Coefficient")])
+        
+        if (!any(!is.finite(cost_history))) {
+          plot(1:length(cost_history), cost_history,
+               type = "l",
+               col = "blue",
+               xlab = "Itération",
+               ylab = "Coût",
+               main = "Évolution du coût pendant l'apprentissage"
+          )
+        } else {
+          warning("Cost history contient des valeurs non finies, impossibilité de faire le graphique.")
         }
-        y_pred <- self$forward(X_train)
-        if (self$classification_type == "binary") {
-          loss <- self$log_loss(y_train, y_pred)
-        } else if (self$classification_type == "softmax") {
-          loss <- self$cross_entropy_loss(y_train, y_pred)
+      } else {
+        theta <- matrix(0, nrow = ncol(X), ncol = self$nb_modalites_cible)
+        thetas_multiclass <- one_vs_rest(X, y, taux_apprentissage, n_iterations, tolerance)
+        # thetas_multiclass <- multinomial_logistic_ovr(X, y, max_iter = 1000, learning_rate = 0.01)
+        predictions_multiclass <- predict_multiclass(X, thetas_multiclass)
+        
+        coef_df <- as.data.frame(t(thetas_multiclass))
+        names(coef_df) <- colnames(X) 
+        rownames(coef_df) <- self$modalites_cible[-1] 
+        
+        input_dim <- ncol(X)
+        num_classes <- if (self$classification_type == "binary") 1 else length(unique(y))
+        self$initialize_weights(input_dim, num_classes)
+        
+        self$losses <- c()
+        for (epoch in 1:self$max_iter) {
+          for (i in 1:nrow(X)) {
+            self$update_weights(X[i, , drop = FALSE], y[i])
+          }
+          y_pred <- self$forward(X)
+          if (self$classification_type == "binary") {
+            loss <- self$log_loss(y, y_pred)
+          } else if (self$classification_type == "softmax") {
+            loss <- self$cross_entropy_loss(y, y_pred)
+          }
+          self$losses <- c(self$losses, loss)
+          cat(sprintf("Epoque %d: Perte = %.4f\n", epoch, loss))
+          if (epoch > 1 && abs(self$losses[epoch] - self$losses[epoch - 1]) < self$tolerance) {
+            cat(sprintf("Convergé à l'époque %d avec une perte de %.4f\n", epoch, loss))
+            break
+          }
+          if (epoch > 1 && self$losses[epoch] > self$losses[epoch - 1]) {
+            self$learning_rate <- self$learning_rate * 0.5
+            cat(sprintf("Réduction du taux d'apprentissage à %.6f à l'époque %d\n", self$learning_rate, epoch))
+          }
         }
-        self$losses <- c(self$losses, loss)
-        cat(sprintf("Epoch %d: Loss = %.4f\n", epoch, loss))
-        if (epoch > 1 && abs(self$losses[epoch] - self$losses[epoch - 1]) < self$tolerance) {
-          cat(sprintf("Converged at epoch %d with loss %.4f\n", epoch, loss))
-          break
-        }
-        if (epoch > 1 && self$losses[epoch] > self$losses[epoch - 1]) {
-          self$learning_rate <- self$learning_rate * 0.5
-          cat(sprintf("Reducing learning rate to %.6f at epoch %d\n", self$learning_rate, epoch))
-        }
+        
+        print("\nCoefficients par modalité et variable :")
+        print(coef_df)
       }
     },
     
-    predict = function(X_test) {
-      y_pred_probs <- self$forward(X_test)
+    predict = function(X) {
+      if (!exists("weights") || !exists("bias")) {
+        stop("Le modèle n'a pas encore été entraîné. Veuillez d'abord utiliser la méthode fit()")
+      }
+      y_pred_probs <- self$forward(X)
       if (self$classification_type == "binary") {
         y_pred <- as.integer(y_pred_probs >= 0.5)
       } else if (self$classification_type == "softmax") {
         y_pred <- max.col(y_pred_probs) - 1
       }
       return(y_pred)
+    },
+    
+    predict_proba = function(X) {
+      if (!exists("weights") || !exists("bias")) {
+        stop("Le modèle n'a pas encore été entraîné. Veuillez d'abord utiliser la méthode fit()")
+      }
+      y_pred_probs <- self$forward(X)
+      
+      return(y_pred_probs)
+    },
+    
+    print = function() {
+      print(paste0("Les données comportent ", nrow(self$data), " observations et ", ncol(self$data), " variables"))
+      print(paste0("La variable cible est '", self$cible, "' avec ", self$nb_modalites_cible, " modalités"))
+      print(paste0("La modalité de référence de ", self$cible, " est '", self$modalite_ref_cible, "'"))
     },
     
     print_weights = function() {
@@ -130,27 +226,34 @@ LogisticRegression <- R6Class(
       print(intercept)
       cat("\nCoefficients:\n")
       print(coefficients)
+    },
+    
+    summary = function() {
+      accuracy <- mean(predictions == y_test)
+      cat(sprintf("\nAccuracy: %.2f%%\n", accuracy * 100))
+      
+      # Tracer les pertes au fil des époques
+      plot(model$losses, type = "l", main = "Loss over epochs", xlab = "Epochs", ylab = "Loss")
+      
+      # Afficher les poids du modèle
+      cat("\nModel Weights:\n")
+      model$print_weights()
     }
-  )
+  ) 
 )
-#############################################################################
-#############################################################################
-############################################################################
-# Exemple d'utilisation
+
 # Charger les données
-# Charger les données
-data <- read.csv("gym_members_exercise_tracking.csv")
+data <- read.csv("datasets/gym_members_exercise_tracking.csv")
 
 # Définir la colonne cible
-cible <- "Gender"
+cible <- "Workout_Type"
 feature_cols <- setdiff(names(data), cible)
 
 # Séparer les données en train et test (70% train, 30% test)
 set.seed(123)  # Pour reproductibilité
-train_indices <- sample(1:nrow(data), size = 0.8 * nrow(data))
+train_indices <- sample(1:nrow(data), size = 0.7 * nrow(data))
 train_data <- data[train_indices, ]
 test_data <- data[-train_indices, ]
-
 # Identifier les colonnes quantitatives et qualitatives
 quantitative_cols <- feature_cols[sapply(data[, feature_cols], is.numeric)]
 qualitative_cols <- feature_cols[!sapply(data[, feature_cols], is.numeric)]
@@ -203,15 +306,15 @@ y_train <- train_final$Workout_Type  # Cible
 X_test <- as.matrix(test_final[, setdiff(names(test_final), "Workout_Type")])  # Caractéristiques
 y_test <- test_final$Workout_Type  # Cible
 
-
-##############################################
 ##############################################
 
 # Initialiser le modèle
 model <- LogisticRegression$new(
+  data = data,
+  cible = cible,
   learning_rate = 0.001,
   max_iter = 500,
-  classification_type = "binary",
+  classification_type = "softmax",
   regularization = "l2",
   reg_lambda = 0.01
 )
@@ -222,107 +325,106 @@ model$fit(X_train, y_train)
 # Effectuer des prédictions sur l'ensemble de test
 predictions <- model$predict(X_test)
 
+# Afficher les prédictions de probas d'appartenance de classes de la variable cible
+probas <- model$predict_proba(y_test)
+
 # Afficher les prédictions et la cible réelle
+
+cat("Probas d'appartenance à \n")
+print(probas)
 cat("Predictions:\n")
 print(predictions)
 cat("\nTrue Labels:\n")
 print(y_test)
 
 # Calculer et afficher la précision
-accuracy <- mean(predictions == y_test)
-cat(sprintf("\nAccuracy: %.2f%%\n", accuracy * 100))
-
-# Tracer les pertes au fil des époques
-plot(model$losses, type = "l", main = "Loss over epochs", xlab = "Epochs", ylab = "Loss")
-
-# Afficher les poids du modèle
-cat("\nModel Weights:\n")
-model$print_weights()
+model$summary()
 
 
-'''
-####################
+
+# ####################
 # Fonction pour effectuer le Grid Search
-grid_search <- function(X_train, y_train, X_test, y_test, param_grid) {
-  best_model <- NULL
-  best_accuracy <- 0
-  best_params <- NULL
-  
-  results <- list()
-  
-  # Boucle à travers toutes les combinaisons de paramètres
-  for (learning_rate in param_grid$learning_rate) {
-    for (max_iter in param_grid$max_iter) {
-      for (regularization in param_grid$regularization) {
-        for (reg_lambda in param_grid$reg_lambda) {
-          # Initialiser le modèle avec les paramètres actuels
-          model <- LogisticRegression$new(
-            learning_rate = learning_rate,
-            max_iter = max_iter,
-            classification_type = "softmax",
-            regularization = regularization,
-            reg_lambda = reg_lambda
-          )
-          
-          # Entraîner le modèle
-          model$fit(X_train, y_train)
-          
-          # Effectuer des prédictions
-          predictions <- model$predict(X_test)
-          
-          # Calculer la précision
-          accuracy <- mean(predictions == y_test)
-          
-          # Stocker les résultats
-          results <- append(results, list(list(
-            learning_rate = learning_rate,
-            max_iter = max_iter,
-            regularization = regularization,
-            reg_lambda = reg_lambda,
-            accuracy = accuracy
-          )))
-          
-          # Vérifier si ce modèle est le meilleur
-          if (accuracy > best_accuracy) {
-            best_accuracy <- accuracy
-            best_model <- model
-            best_params <- list(
-              learning_rate = learning_rate,
-              max_iter = max_iter,
-              regularization = regularization,
-              reg_lambda = reg_lambda
-            )
-          }
-        }
-      }
-    }
-  }
-  
-  # Retourner les résultats
-  return(list(best_model = best_model, best_params = best_params, best_accuracy = best_accuracy, all_results = results))
-}
+# grid_search <- function(X_train, y_train, X_test, y_test, param_grid) {
+#   best_model <- NULL
+#   best_accuracy <- 0
+#   best_params <- NULL
 
-# Définir la grille de paramètres
-param_grid <- list(
-  learning_rate = c(0.01, 0.001, 0.0001),
-  max_iter = c(500, 1000, 2000),
-  regularization = c("l1", "l2"),
-  reg_lambda = c(0.01, 0.1, 1.0)
-)
+#   results <- list()
+
+# Boucle à travers toutes les combinaisons de paramètres
+#   for (learning_rate in param_grid$learning_rate) {
+#     for (max_iter in param_grid$max_iter) {
+#       for (regularization in param_grid$regularization) {
+#         for (reg_lambda in param_grid$reg_lambda) {
+#           # Initialiser le modèle avec les paramètres actuels
+#           model <- LogisticRegression$new(
+#             learning_rate = learning_rate,
+#             max_iter = max_iter,
+#             classification_type = "softmax",
+#             regularization = regularization,
+#             reg_lambda = reg_lambda
+#           )
+
+#           # Entraîner le modèle
+#           model$fit(X_train, y_train)
+
+#           # Effectuer des prédictions
+#           predictions <- model$predict(X_test)
+
+#           # Calculer la précision
+#           accuracy <- mean(predictions == y_test)
+
+#           # Stocker les résultats
+#           results <- append(results, list(list(
+#             learning_rate = learning_rate,
+#             max_iter = max_iter,
+#             regularization = regularization,
+#             reg_lambda = reg_lambda,
+#             accuracy = accuracy
+#           )))
+
+#           # Vérifier si ce modèle est le meilleur
+#           if (accuracy > best_accuracy) {
+#             best_accuracy <- accuracy
+#             best_model <- model
+#             best_params <- list(
+#               learning_rate = learning_rate,
+#               max_iter = max_iter,
+#               regularization = regularization,
+#               reg_lambda = reg_lambda
+#             )
+#           }
+#         }
+#       }
+#     }
+#   }
+
+# Retourner les résultats
+#   return(list(best_model = best_model, best_params = best_params, best_accuracy = best_accuracy, all_results = results))
+# }
+
+# # Définir la grille de paramètres
+# param_grid <- list(
+#   learning_rate = c(0.01, 0.001, 0.0001),
+#   max_iter = c(500, 1000, 2000),
+#   regularization = c("l1", "l2"),
+#   reg_lambda = c(0.01, 0.1, 1.0)
+# )
 
 # Exécuter le Grid Search
-grid_results <- grid_search(X_train, y_train, X_test, y_test, param_grid)
+# grid_results <- grid_search(X_train, y_train, X_test, y_test, param_grid)
 
 # Résultats du meilleur modèle
-cat("Best Parameters:\n")
-print(grid_results$best_params)
-cat(sprintf("\nBest Accuracy: %.2f%%\n", grid_results$best_accuracy * 100))
+# cat("Best Parameters:\n")
+# print(grid_results$best_params)
+# cat(sprintf("\nBest Accuracy: %.2f%%\n", grid_results$best_accuracy * 100))
 
 # Tracer les pertes du meilleur modèle
-plot(grid_results$best_model$losses, type = "l", main = "Loss over epochs (Best Model)", xlab = "Epochs", ylab = "Loss")
+# plot(grid_results$best_model$losses, type = "l", main = "Loss over epochs (Best Model)", xlab = "Epochs", ylab = "Loss")
 
 # Afficher les poids du meilleur modèle
-cat("\nBest Model Weights:\n")
-grid_results$best_model$print_weights()
+# cat("\nBest Model Weights:\n")
+# grid_results$best_model$print_weights()
+
 
 

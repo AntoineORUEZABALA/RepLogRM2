@@ -13,8 +13,10 @@
 %	Packages
 %----------------------------------------------------------------------------------------
 
+% Classe du document
 \documentclass[10pt,french]{report}
 
+% Packages langue française
 \usepackage[frenchb]{babel}
 % Pour les guillemets en style français
 \usepackage[french=guillemets]{csquotes}
@@ -76,7 +78,7 @@
 }
 
 
-% Bibliographie : faire F5, puis F8, puis F5 à nouveau (c'est Latex, c'est tout simple)
+% Bibliographie : sous TexStudio, faire F5, puis F8, puis F5 à nouveau (c'est Latex, c'est tout simple)
 \usepackage[style=numeric]{biblatex}
 \addbibresource{Rapport.bib}
 
@@ -121,7 +123,7 @@
 	\setlength{\parskip}{12pt}
 
 	\begin{abstract}
-		Ce rapport détaille l'implémentation de la régression logistique multinomiale pour des données mixtes, en langage R, et en utilisant la descente de gradient. Nous couvrons tout d'abord quelques fondements théoriques, puis l'approche pratique et enfin discutons des résultats obtenus. En fin d'ouvrage, un lexique donne une définition des termes et expressions souvent usité en régression logistique.
+		Ce rapport détaille l'implémentation de la régression logistique multinomiale pour des données mixtes, en langage R, et en utilisant la descente de gradient. Nous couvrons tout d'abord quelques fondements théoriques, puis l'approche pratique et enfin discutons des résultats obtenus. En fin d'ouvrage, une bibliographie donnera quelques pistes au lecteur curieux d'approfondir certains aspects, ou désireux d'apprendre par le biais d'une pédagogie quelque fois différente de celle de ce rapport. Un lexique vient également compléter nos écrits et donne accès à des définitions et formules mathématiques de façon plus condensés que dans le corps du texte.
 
 		Ce rapport a été rédigé en novembre 2024 dans le cadre d'un projet du master 2 SISE.
 	\end{abstract}
@@ -131,35 +133,81 @@
 	\section{La régression logistique multinomiale}
 	\subsection{Principes Généraux}
 	% Description du modèle multinomial et de ses applications.
-	La régression logistique vise à prédire la probabilité qu'un événement binaire se produise (oui/non, 1/0) en fonction de variables explicatives. Elle utilise une fonction logistique (ou sigmoïde) pour transformer la combinaison linéaire des variables explicatives en une probabilité comprise entre 0 et 1.
+	La régression logistique est un modèle statistique permettant d'étudier les relations entre un ensemble de variables Xi et une variable qualitative y. Elle permet de prédire la probabilité qu'un événement arrive (valeur de 1) ou non (valeur de 0) à partir de l'optimisation des coefficients de régression.
+	
+	On distingue trois types de régression logistique :
+	\begin{enumerate}
+		\item La régression logistique binaire. Elle vise à prédire la probabilité qu'un événement binaire se produise (oui/non, 1/0) en fonction de variables explicatives. Elle utilise une fonction logistique (ou sigmoïde) pour transformer la combinaison linéaire des variables explicatives en une probabilité comprise entre 0 et 1.
+		\item La régression logistique \textbf{multinomiale} est une généralisation de la régression logistique binaire. Elle permet d'estimer la probabilité d'appartenance à chacune des catégories en fonction de variables explicatives quantitatives et/ou qualitatives. Contrairement à la régression logistique binaire qui modélise une seule probabilité $p$, la régression logistique multinomiale estime simultanément les probabilités d'appartenance à toutes les catégories ($p_1, p_2, ..., p_K$), avec la contrainte que leur somme soit égale à 1.
+		\item La régression logistique ordinale. Ce type de modèle de régression logistique est utilisé lorsque la variable de réponse a trois modalités possibles ou plus et que ces dernières ont un ordre défini.
+	\end{enumerate}
+	
+	Ce document ne traitera sauf mention contraire que la régression logistique multinomiale nominale, c'est-à-dire que l'on ne suppose aucun ordre particulier entre les modalités de la variable à prédire.
 
-	La régression logistique \textbf{multinomiale} est une généralisation de la régression logistique binaire. Elle permet d'estimer la probabilité d'appartenance à chacune des catégories en fonction de variables explicatives quantitatives et/ou qualitatives. Contrairement à la régression logistique binaire qui modélise une seule probabilité $p$, la régression logistique multinomiale estime simultanément les probabilités d'appartenance à toutes les catégories ($p_1, p_2, ..., p_K$), avec la contrainte que leur somme soit égale à 1.
-
-	Le modèle utilise une transformation logistique qui garantit que les probabilités estimées restent comprises entre 0 et 1. Une catégorie est choisie comme référence, et le modèle estime les logarithmes des rapports de probabilités (log-odds) entre chaque catégorie et cette référence.
-
-	Nous nous placerons dans le cas où cette régression est nominale, c'est-à-dire que l'on ne suppose aucun ordre particulier entre les modalités de la variable à prédire.
-
-    \subsection{Modélisation mathématique}
-
-    Pour construire un modèle de régression logistique, l'équation de régression linéaire est utilisée comme point de départ\cite{datatab, ricco} :
-
-     \begin{equation}
-         \hat{y} = a + b_1x_1 + \ldots + b_kx_k
-     \end{equation}
-
-     Avec :
-     \begin{itemize}
-         \item $\hat{y}$ la variable cible
-         \item $a$ l'intercept,
-         \item $x_k$ la variable prédictive $k$,
-         \item $b_k$ le coefficient rattaché à cette variable,
-         \item $K$ le nombre de variables prédictives.
-     \end{itemize}
-
-    Toutefois, une telle équation produirait des coefficients $\in \mathbb{R}$, et l'objectif de la régression logistique est d'estimer la probabilité d'occurrence et non la valeur de la variable elle-même. Cette équation doit donc être transformée.
-
-    C'est le rôle de la fonction LOGIT.
-
+    \subsection{Modélisation mathématique\cite{makisreglog}}
+    
+    \subsubsection{Formulation du problème}
+    
+    Soit :
+    \begin{itemize}
+    	\item $Y$ une variable catégorielle cible prenant $K$ valeurs distinctes : $\{1, 2, \dots, K\}$,
+    	\item $X$ est un vecteur des $p$ variables explicatives pour une observation donnée,
+    	\item $\boldsymbol{\beta}_k$ est un vecteur des coefficients associés à la classe $k$,
+    	\item $P(Y = k \mid X = \mathbf{x})$ est la probabilité conditionnelle pour chaque classe $k \in \{1, 2, \dots, K\}$.
+    \end{itemize}
+    
+    \subsubsection{Colinéarité}
+    
+    Pour éviter les problèmes de colinéarités, on choisit une classe de référence que l'on exclut de la modélisation.
+    
+    Les probabilités des $k-1$ classes se calculent avec :
+    
+    \begin{equation}
+    	P_k = \frac{e^{C_k}}{1+\sum_{k=1}^{K-1}e^{C_k}}
+    \end{equation}
+    
+    Avec $C_k$ le logit pour la modalité $k$ de $Y$; et comme indiqué précédemment $k \in \{1, 2, \dots, K-1\}$.
+    
+    La probabilité pour la classe de référence $K$ peut être déduite après coup :
+    
+    \begin{equation}
+    	P_K = 1 - \sum_{k=1}^{K-1}P_k
+    \end{equation}
+    
+    \section{La descente de gradient}
+    
+    L'estimation des coefficients $\beta$ peut se faire par descente de gradient.
+    
+    La descente de gradient est un algorithme d'optimisation itératif, qui permet de trouver le minimum d'une fonction.
+    
+    L'idée est la suivante :
+    \begin{itemize}
+    	\item on part d'un point choisi aléatoirement,
+    	\item depuis ce point nous cherchons le gradient (la pente),
+    	\item et nous descendons d'un pas dans la direction opposé au gradient,
+    	\item nous recommençons le processus à partir du nouveau point atteint.
+    \end{itemize}
+    
+    Les critères pour s'arrêter peuvent être :
+    \begin{itemize}
+    	\item le nombre d'itérations; on définit un maximum au début de l'algorithme, que l'on ne dépasse pas,
+    	\item la différence de "niveau" entre deux points; si elle passe en dessous d'un seuil très faible, l'approximation est jugée suffisamment bonne,
+    	\item une combinaison de ces deux critères, qui a l'avantage de s'arrêter le plus tôt possible.
+    \end{itemize}
+    
+    Vocabulaire :
+    \begin{itemize}
+    	\item la taille du pas est dénommé taux d'apprentissage (en anglais learning rate),
+    	\item la différence minimale souhaitée entre deux points consécutifs est la tolérance,
+    	\item
+    	\item
+    \end{itemize}
+    
+    Mathématiquement, la pente est définie par le gradient. La taille du pas est dénommé taux d'apprentissage.
+    
+    Il existe trois types d'algorithmes d'apprentissage par descente de gradient : la descente de gradient simple (sur tous les points), la descente de gradient stochastique et la descente de gradient par mini-lots.
+    
+    
 	\subsection{Fonction de Coût}
 	% Explication de la fonction d'erreur cross-entropy catégorielle.
 	La fonction de coût utilisée pour la régression logistique multinomiale est la cross-entropie catégorielle. Elle évalue la divergence entre les probabilités prédites par le modèle et les probabilités réelles des classes. Elle est définie comme suit :
@@ -177,21 +225,6 @@
 
 	Minimiser cette fonction de coût permet d'ajuster les paramètres \( \beta \) du modèle pour améliorer la précision des prédictions. La descente de gradient est une méthode d'optimisation utilisée pour trouver les valeurs optimales de \( \beta \) qui minimisent \( J(\beta) \).
 
-	\subsection{Hypothèses du Modèle}
-	% Discussion sur l'utilisation de la fonction SoftMax.
-	Dans le cadre de la régression logistique multinomiale, plusieurs hypothèses fondamentales sont posées pour assurer la validité et la robustesse du modèle :
-
-	\begin{itemize}
-		\item \textbf{Indépendance des observations} : Chaque observation est supposée indépendante des autres. Cette hypothèse garantit que l'information apportée par chaque donnée est unique et non redondante.
-
-		\item \textbf{Relation linéaire entre les variables explicatives et le logit} : Le modèle suppose une relation linéaire entre les variables explicatives \( X \) et le logarithme des probabilités conditionnelles (logits). Cela signifie que l'effet de chaque variable explicative est additif sur le logit.
-
-		\item \textbf{Absence de multicolinéarité parfaite} : Les variables explicatives ne doivent pas être des combinaisons linéaires exactes les unes des autres. La présence de multicolinéarité peut entraîner des estimations instables des coefficients du modèle.
-
-		\item \textbf{Catégories mutuellement exclusives et exhaustives} : Les classes de la variable dépendante doivent être clairement définies sans chevauchement, et couvrir toutes les possibilités.
-
-	\end{itemize}
-
 	La fonction \textit{SoftMax} est essentielle dans ce modèle car elle transforme les scores linéaires en probabilités. Elle garantit que les sorties du modèle sont comprises entre 0 et 1 et que la somme des probabilités pour toutes les classes est égale à 1 pour chaque observation. La fonction \textit{SoftMax} est définie par :
 
 	\[
@@ -204,36 +237,7 @@
 
 	\section{L'algorithme de descente de gradient}
 
-	La descente de gradient est un algorithme d’optimisation itératif, qui permet de trouver le minimum d'une fonction.
-
-	L'idée est la suivante :
-	\begin{itemize}
-		\item on part d'un point choisi aléatoirement,
-		\item depuis ce point nous cherchons le gradient (la pente),
-		\item et nous descendons d'un pas dans la direction opposé au gradient,
-		\item nous recommençons le processus à partir du nouveau point atteint.
-	\end{itemize}
-
-	Les critères pour s'arrêter peuvent être :
-	\begin{itemize}
-		\item le nombre d'itérations; on définit un maximum au début de l'algorithme, que l'on ne dépasse pas,
-		\item la différence de "niveau" entre deux points; si elle passe en dessous d'un seuil très faible, l'approximation est jugée suffisamment bonne,
-		\item une combinaison de ces deux critères, qui a l'avantage de s'arrêter le plus tôt possible.
-	\end{itemize}
-
-	Vocabulaire :
-	\begin{itemize}
-		\item la taille du pas est dénommé taux d'apprentissage (en anglais learning rate),
-		\item la différence minimale souhaitée entre deux points consécutifs est la tolérance,
-		\item
-		\item
-	\end{itemize}
-	Mathématiquement, la pente est définie par le gradient. La taille du pas est dénommé taux d'apprentissage.
-
-	La pente, forte au départ forte, doit aller en décroissant au fur et à mesure que l'on se rapproche du point le plus bas (ou d'un minimum local). On peut, pour limiter le temps de calcul, définir une différence minimale entre deux points consécutifs en-dessous de laquelle il n'est pas utile d'entamer une nouvelle itération. Cette différence minimale s'appelle la tolérance.
-
-	Il existe trois types d'algorithmes d'apprentissage par descente de gradient : la descente de gradient simple (sur tous les points), la descente de gradient stochastique et la descente de gradient par mini-lots.
-
+	
 	\subsection{Modélisation}
 
 	\subsection{Test}
@@ -523,7 +527,7 @@
 	\label{taux apprentissag}
 	\entreelex{Taux d'apprentissage}{Ou learning Rate : il fixe la « grandeur » du pas de chaque itération de la descente de gradient.}
 
-	\entreelex{Descente de gradient}{La descente de gradient est un algorithme d’optimisation couramment utilisé pour entraîner les modèles de machine learning et les réseaux neuronaux. Ce type d’algorithme entraîne les modèles de machine learning par réduction des erreurs entre les résultats prédits et les résultats réels.\cube Le point de départ n'est qu'un point arbitraire qui nous permet d'évaluer les performances. À partir de ce point de départ, nous allons trouver la dérivée (ou la pente) et, à partir de là, nous pourrons utiliser une ligne tangente pour observer l'inclinaison de la pente. La pente renseigne sur les mises à jour des paramètres, c'est-à-dire les poids et les biais. La pente au point de départ est plus forte, mais au fur et à mesure que de nouveaux paramètres sont générés, elle devrait progressivement diminuer jusqu'à atteindre le point le plus bas de la courbe, dénommé point de convergence.\cube Comme pour trouver la ligne de meilleur ajustement dans la régression linéaire, l'objectif de la descente de gradient est de minimiser la fonction de coût, ou l'erreur entre y prédit et y réel. Pour ce faire, deux points de données sont nécessaires : une orientation et un taux d'apprentissage. Ces facteurs déterminent les calculs de dérivée partielle des itérations futures, ce qui lui permet d'atteindre progressivement le minimum local ou global (c'est-à-dire le point de convergence).. La fonction de perte dans la descente de gradient agit spécifiquement comme un baromètre, évaluant sa précision à chaque itération des mises à jour de paramètres. Jusqu'à ce que la fonction soit proche ou égale à zéro, le modèle continue à ajuster ses paramètres pour obtenir l'erreur la plus faible possible.\cube Il existe trois types d'algorithmes d'apprentissage par descente de gradient : la descente de gradient par lots, la descente de gradient stochastique et la descente de gradient par mini-lots.}
+	\entreelex{Descente de gradient}{La descente de gradient est un algorithme d'optimisation couramment utilisé pour entraîner les modèles de machine learning et les réseaux neuronaux. Ce type d'algorithme entraîne les modèles de machine learning par réduction des erreurs entre les résultats prédits et les résultats réels.\cube Le point de départ n'est qu'un point arbitraire qui nous permet d'évaluer les performances. À partir de ce point de départ, nous allons trouver la dérivée (ou la pente) et, à partir de là, nous pourrons utiliser une ligne tangente pour observer l'inclinaison de la pente. La pente renseigne sur les mises à jour des paramètres, c'est-à-dire les poids et les biais. La pente au point de départ est plus forte, mais au fur et à mesure que de nouveaux paramètres sont générés, elle devrait progressivement diminuer jusqu'à atteindre le point le plus bas de la courbe, dénommé point de convergence.\cube Comme pour trouver la ligne de meilleur ajustement dans la régression linéaire, l'objectif de la descente de gradient est de minimiser la fonction de coût, ou l'erreur entre y prédit et y réel. Pour ce faire, deux points de données sont nécessaires : une orientation et un taux d'apprentissage. Ces facteurs déterminent les calculs de dérivée partielle des itérations futures, ce qui lui permet d'atteindre progressivement le minimum local ou global (c'est-à-dire le point de convergence).. La fonction de perte dans la descente de gradient agit spécifiquement comme un baromètre, évaluant sa précision à chaque itération des mises à jour de paramètres. Jusqu'à ce que la fonction soit proche ou égale à zéro, le modèle continue à ajuster ses paramètres pour obtenir l'erreur la plus faible possible.\cube Il existe trois types d'algorithmes d'apprentissage par descente de gradient : la descente de gradient par lots, la descente de gradient stochastique et la descente de gradient par mini-lots.}
 
 	\listoffigures
 

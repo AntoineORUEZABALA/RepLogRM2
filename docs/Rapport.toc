@@ -2,35 +2,38 @@
 \contentsline {chapter}{\numberline {1}Théorie}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}La régression logistique multinomiale}{1}{section.1.1}%
 \contentsline {subsection}{\numberline {1.1.1}Principes Généraux}{1}{subsection.1.1.1}%
-\contentsline {subsection}{\numberline {1.1.2}Fonction de Coût}{2}{subsection.1.1.2}%
-\contentsline {subsection}{\numberline {1.1.3}Hypothèses du Modèle}{2}{subsection.1.1.3}%
-\contentsline {section}{\numberline {1.2}L'algorithme de descente de gradient}{3}{section.1.2}%
-\contentsline {subsection}{\numberline {1.2.1}Modélisation}{3}{subsection.1.2.1}%
-\contentsline {subsection}{\numberline {1.2.2}Test}{3}{subsection.1.2.2}%
-\contentsline {chapter}{\numberline {2}Implémentation Pratique en R}{4}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Structure du programme}{4}{section.2.1}%
-\contentsline {subsection}{\numberline {2.1.1}main.r}{4}{subsection.2.1.1}%
-\contentsline {subsection}{\numberline {2.1.2}utils.r}{4}{subsection.2.1.2}%
-\contentsline {subsection}{\numberline {2.1.3}preprocessing.r}{5}{subsection.2.1.3}%
-\contentsline {subsection}{\numberline {2.1.4}LogisticRegression.r}{5}{subsection.2.1.4}%
-\contentsline {subsubsection}{Fonction \enquote *{sigmoid}}{5}{section*.2}%
-\contentsline {subsubsection}{Fonction \enquote *{softmax}}{5}{section*.3}%
-\contentsline {subsubsection}{Fonction \enquote *{cout}}{5}{section*.4}%
-\contentsline {subsubsection}{Fonction \enquote *{hypothese}}{5}{section*.5}%
-\contentsline {subsubsection}{Fonction \enquote *{descente\textunderscore gradient}}{5}{section*.6}%
-\contentsline {subsection}{\numberline {2.1.5}Répertoire docs}{6}{subsection.2.1.5}%
-\contentsline {section}{\numberline {2.2}Vérification des données}{6}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}Format des objets passés en argument}{6}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}Format des données}{6}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.2.3}Cohérence des données}{6}{subsection.2.2.3}%
-\contentsline {section}{\numberline {2.3}Pré-traitement des données}{6}{section.2.3}%
-\contentsline {subsection}{\numberline {2.3.1}Variable cible $y$}{6}{subsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.3.2}Variables explicatives $X$}{6}{subsection.2.3.2}%
-\contentsline {subsubsection}{Variables numériques}{7}{section*.7}%
-\contentsline {subsubsection}{Variables catégorielles}{7}{section*.8}%
-\contentsline {chapter}{\numberline {3}Éléments introductifs}{8}{chapter.3}%
-\contentsline {section}{\numberline {3.1}La régression logistique}{8}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}Notations}{8}{subsection.3.1.1}%
-\contentsline {subsection}{\numberline {3.1.2}Algorithmes}{9}{subsection.3.1.2}%
-\contentsline {subsection}{\numberline {3.1.3}Champs d'application}{10}{subsection.3.1.3}%
-\contentsline {chapter}{\numberline {4}Lexique}{11}{chapter.4}%
+\contentsline {subsection}{\numberline {1.1.2}Modélisation mathématique\blx@tocontentsinit {0}\cite {makisreglog}}{2}{subsection.1.1.2}%
+\contentsline {subsubsection}{Formulation du problème}{2}{section*.2}%
+\contentsline {subsubsection}{Colinéarité}{2}{section*.3}%
+\contentsline {section}{\numberline {1.2}La descente de gradient}{2}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Fonction de Coût}{3}{subsection.1.2.1}%
+\contentsline {section}{\numberline {1.3}L'algorithme de descente de gradient}{4}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Modélisation}{4}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Test}{4}{subsection.1.3.2}%
+\contentsline {chapter}{\numberline {2}Implémentation Pratique en R}{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Structure du programme}{5}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}main.r}{5}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}utils.r}{5}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}preprocessing.r}{6}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}LogisticRegression.r}{6}{subsection.2.1.4}%
+\contentsline {subsubsection}{Fonction \enquote *{sigmoid}}{6}{section*.4}%
+\contentsline {subsubsection}{Fonction \enquote *{softmax}}{6}{section*.5}%
+\contentsline {subsubsection}{Fonction \enquote *{cout}}{6}{section*.6}%
+\contentsline {subsubsection}{Fonction \enquote *{hypothese}}{6}{section*.7}%
+\contentsline {subsubsection}{Fonction \enquote *{descente\textunderscore gradient}}{6}{section*.8}%
+\contentsline {subsection}{\numberline {2.1.5}Répertoire docs}{7}{subsection.2.1.5}%
+\contentsline {section}{\numberline {2.2}Vérification des données}{7}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Format des objets passés en argument}{7}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Format des données}{7}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Cohérence des données}{7}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Pré-traitement des données}{7}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Variable cible $y$}{7}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Variables explicatives $X$}{7}{subsection.2.3.2}%
+\contentsline {subsubsection}{Variables numériques}{8}{section*.9}%
+\contentsline {subsubsection}{Variables catégorielles}{8}{section*.10}%
+\contentsline {chapter}{\numberline {3}Éléments introductifs}{9}{chapter.3}%
+\contentsline {section}{\numberline {3.1}La régression logistique}{9}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Notations}{9}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Algorithmes}{10}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Champs d'application}{11}{subsection.3.1.3}%
+\contentsline {chapter}{\numberline {4}Lexique}{12}{chapter.4}%

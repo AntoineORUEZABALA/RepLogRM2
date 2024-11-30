@@ -4,6 +4,7 @@ library(readxl)
 library(shinyWidgets)
 library(DT)
 library(dplyr)
+library(shinythemes)
 library(nnet) # Pour multinom
 
 get_dataset_description <- function(dataset_name) {
@@ -18,9 +19,10 @@ get_dataset_description <- function(dataset_name) {
 }
 
 ui <- fluidPage(
-  theme = shinytheme("yeti"),
+  theme = shinytheme("sandstone"),
   tags$head(
     tags$style(HTML("
+    
   /* Style général pour le pickerInput */
   .bootstrap-select .dropdown-toggle {
     height: 34px !important;
@@ -55,6 +57,8 @@ ui <- fluidPage(
     background-color: #66afe9 !important;
     color: white !important;
   }
+  
+  
 "))
   ),
   titlePanel("Régression Logistique"),

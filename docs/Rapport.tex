@@ -299,11 +299,67 @@
         \item vérifier que l'on a atteint un critère d'arrêt :
         \begin{itemize}
             \item nombre d'itérations maximum atteint,
-            \item et/ou précision souhaitée (différence entre deux itérations) atteinte,
+            \item ou précision souhaitée (différence entre deux itérations) atteinte,
+			\item ou norme du gradient devient suffisamment petite (proche d'un point critique),
+			\item ou variation des paramètres entre deux itérations devient très petite,
+			\item ou utilisation de plusieurs critères simultanément pour garantir une convergence robuste.
         \end{itemize}
+		\item vérifier que le point obtenu satisfait réellement les conditions nécessaires pour être un minimum local :
+		\begin{itemize}
+			\item la norme du gradient $(\vert \vert)\nabla f\left(x^\star\right)(\vert \vert)$ est proche de zéro, 
+			\item la matrice hessienne $\nabla^2 f\left(x^\star\right)$ (si calculable) est définie positive, confirmant que $x^\star$ est un minimum local.
+		\end{itemize}
+		\item calculer la valeur de $f(x^\star)$ pour s'assurer qu'elle est acceptable par rapport aux exigences du problème.
+        \item vérifier si la solution $x^\star$ est cohérente et utile dans le cadre du problème initial.
+		\item tester la solution obtenue.
+		\item si la solution obtenue n'est pas satisfaisante , des méthodes complémentaires peuvent être utilisées :
+		\begin{itemize}
+			\item relancer la descente de gradient à partir d'un autre point initial pour explorer d'autres minima.
+			\item compléter par une recherche globale .
+			\item si le critère d'arrêt a été atteint trop tôt à cause d'un pas mal adapté, réajuster les paramètres.
+		\end{itemize}
     \end{itemize}
 
 	\subsection{Test}
+
+	Les tests permettent de quantifier la qualité d’un modèle lorsque l'on rajoute une variable supplémentaire. 
+
+	Nous avons trois tests : 
+	\begin{itemize}
+		\item le test de Wald  
+		\item le test du rapport de vraisemblance 
+		\item le test du score de Rao 
+	\end{itemize}
+	
+	Nous allons maintenant présenter les formules de ces tests.
+	
+	La statistique du test de Wald:
+
+	\begin{equation}
+		Z_j = sign(\beta_j) \cdot \frac{\beta_j}{\sigma_{\beta_j}}
+	\end{equation}
+	
+	où $\beta_j$ désigne le coefficient estimé de la variable $X^j$ et de $\sigma_{\beta_j}$ son écart-type.
+
+	La statistique du test suit un loi normale centrée-réduite et l’hypothèse $H_0$ est que coefficient estimé est nul.
+
+	La statistique du test de rapport de vraisemblance:
+
+	\begin{equation}
+	D = -2 ln (\frac{\mbox{Vraisemblance modele de reference}}{\mbox{Vraisemblance modele d'interet}})
+	\end{equation}
+
+	La statistique de test suit une loi du $\chi^2$ de paramètre $(df_1 - df_2)$ où $df_k$ désigne le nombre de variables du modèle $k$. L’hypothèse $H_0$ est que les modèles sont semblables.
+
+	La statistique du test du Score de Rao:
+
+	\begin{equation}
+	R = U_{H_0} ^T (\beta) I_{H_0} ^{-1} (\beta) U_{H_0} (\beta)
+	\end{equation}
+
+	Où $U_{H_0}$ est la matrice des dérivées partielles de la log-vraisemblance et $I$ la matrice d’information.
+
+	La statistique de test suit une loi du $\chi ^2$ de paramètre $P$. L’hypothèse $H_0$ est que les coefficients sont nuls.
 
 	\chapter{Implémentation Pratique en R}
 
@@ -389,6 +445,254 @@
 			return(gradient)
 		}
 	\end{verbatim}
+
+	\subsubsection{Fonction \enquote*{summary}}
+    Affiche les informations du modèle 
+    \begin{verbatim}
+    	summary = function(class_names = NULL) {
+      		self$print()
+      		cat("\nModel Weights (if trained):\n")
+
+      		if (!is.null(self$weights)) {
+        		intercept <- self$weights[1, , drop = FALSE]  
+        		coefficients <- self$weights[-1, , drop = FALSE]  
+
+        		if (self$classification_type == "binary") {
+          			weights_binary <- cbind(-self$weights, self$weights)  
+          			rownames(weights_binary) <- c("(Intercept)", colnames(X_train)) 
+
+          			weights_binary_sorted <- weights_binary[order(-abs(weights_binary[, 2])), 
+          			, drop = FALSE]
+
+          			if (!is.null(class_names) && length(class_names) == 2) {
+            			colnames(weights_binary_sorted) <- class_names  
+          			} else {
+            			colnames(weights_binary_sorted) <- c("Class 0", "Class 1") 
+          			}
+
+          			cat("\nWeights (Binary Classification, sorted by absolute value):\n")
+          			print(weights_binary_sorted)
+
+          			feature_importance <- data.frame(
+            		Feature = rownames(weights_binary_sorted)[-1],  
+            		Importance = abs(weights_binary_sorted[-1, 2])  
+          			)
+
+        			} else if (self$classification_type == "softmax") {
+          			if (!is.null(class_names)) {
+            			colnames(self$weights) <- class_names
+          			}
+
+          			intercept <- self$weights[1, ]  
+          			coefficients <- self$weights[-1, , drop = FALSE]  
+
+          			total_importance <- rowMeans(abs(coefficients))
+
+          			sorted_indices <- order(-total_importance)
+          			coefficients_sorted <- coefficients[sorted_indices, , drop = FALSE]
+
+          			rownames(coefficients_sorted) <- colnames(X_train)[sorted_indices]  
+
+          			cat("Intercepts:\n")
+          			print(intercept)
+
+          			cat("\nCoefficients (sorted by absolute value across all classes):\n")
+          			print(coefficients_sorted)
+
+          			feature_importance <- data.frame(
+            			Feature = rownames(coefficients_sorted),
+            			Importance = total_importance[sorted_indices]
+          		)
+        	}
+		}
+	}
+    \end{verbatim}
+
+	\subsubsection{Fonction \enquote*{forward}}
+
+    Effectue une propagation en amont dans le modèle :
+    \begin{verbatim}
+        forward = function(x) {
+      x_with_bias <- cbind(1, x)
+      z <- x_with_bias %*% self$weights
+
+      if (self$classification_type == "binary") {
+        return(self$sigmoid(z))
+      } else if (self$classification_type == "softmax") {
+        return(self$softmax(z))
+      }
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{log\textunderscore loss}}
+
+    Implémente la fonction de perte logistique :
+    \begin{verbatim}
+        log_loss = function(y_true, y_pred) {
+      y_pred <- pmin(pmax(y_pred, 1e-15), 1 - 1e-15)
+      return(-mean(y_true * log(y_pred) + (1 - y_true) * log(1 - y_pred)))
+    }
+    \end{verbatim}
+
+	\subsubsection{Fonction \enquote*{cross\textunderscore entropy\textunderscore loss}}
+
+    Implémente la perte par entropie croisée pour une classification multiclasse :
+    \begin{verbatim}
+        log_loss = function(y_true, y_pred) {
+      y_pred <- pmin(pmax(y_pred, 1e-15), 1 - 1e-15)
+      return(-mean(y_true * log(y_pred) + (1 - y_true) * log(1 - y_pred)))
+    }
+    \end{verbatim}
+
+	\subsubsection{Fonction \enquote*{update\textunderscore weights}}
+
+    Met à jour les poids du modèle :
+    \begin{verbatim}
+		update_weights = function(x, y) {
+		  if (self$classification_type == "softmax") {
+			y <- as.integer(y)
+			y_one_hot <- matrix(0, nrow = nrow(x), ncol = ncol(self$weights))
+			y_one_hot[cbind(1:nrow(x), y + 1)] <- 1
+		  }
+		  y_pred <- self$forward(x)
+		  if (self$classification_type == "binary") {
+			error <- y_pred - y
+		  } else if (self$classification_type == "softmax") {
+			error <- y_pred - y_one_hot
+		  }
+		  gradient <- t(cbind(1, x)) %*% error / nrow(x)
+	
+		  if (self$regularization == "l2") {
+			gradient[-1, ] <- gradient[-1, ] + self$reg_lambda * 
+			self$weights[-1, ] / nrow(x)
+		  } else if (self$regularization == "l1") {
+			gradient[-1, ] <- gradient[-1, ] + self$reg_lambda * 
+			sign(self$weights[-1, ]) / nrow(x)
+		  }
+		  self$weights <- self$weights - self$learning_rate * gradient
+		}
+		\end{verbatim}
+
+    \subsubsection{Fonction \enquote*{fit}}
+
+    Entraîne le modèle pour minimiser la perte :
+    \begin{verbatim}
+    fit = function(X_train, y_train) {
+      input_dim <- ncol(X_train)
+      num_classes <- if (self$classification_type == "binary") 1 else 
+      length(unique(y_train))
+      self$initialize_weights(input_dim, num_classes)
+
+      self$losses <- c()
+      for (epoch in 1:self$max_iter) {
+        for (i in 1:nrow(X_train)) {
+          self$update_weights(X_train[i, , drop = FALSE], y_train[i])
+        }
+        y_pred <- self$forward(X_train)
+        if (self$classification_type == "binary") {
+          loss <- self$log_loss(y_train, y_pred)
+        } else if (self$classification_type == "softmax") {
+          loss <- self$cross_entropy_loss(y_train, y_pred)
+        }
+        self$losses <- c(self$losses, loss)
+        cat(sprintf("Epoch %d: Loss = %.4f\n", epoch, loss))
+        if (epoch > 1 && abs(self$losses[epoch] - self$losses[epoch - 1]) 
+        < self$tolerance) {
+          cat(sprintf("Converged at epoch %d with loss %.4f\n", epoch, loss))
+          break
+        }
+        if (epoch > 1 && self$losses[epoch] > self$losses[epoch - 1]) {
+          self$learning_rate <- self$learning_rate * 0.5
+          cat(sprintf("Reducing learning rate to %.6f at epoch %d\n", 
+          self$learning_rate, epoch))
+        }
+      }
+    }
+    \end{verbatim}
+
+	\subsubsection{Fonction \enquote*{predict}}
+
+    Générer des prédictions finales pour les données d’entrée :
+    \begin{verbatim}
+    predict = function(X_test) {
+      y_pred_probs <- self$forward(X_test)
+      if (self$classification_type == "binary") {
+        y_pred <- as.integer(y_pred_probs >= 0.5)
+      } else if (self$classification_type == "softmax") {
+        y_pred <- max.col(y_pred_probs) - 1
+      }
+      return(y_pred)
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{print\textunderscore weights}}
+
+    Afficher les poids et les intercepts du modèle :
+    \begin{verbatim}
+    print_weights = function() {
+      intercept <- self$weights[1, ]
+      coefficients <- self$weights[-1, , drop = FALSE]
+      cat("Intercept(s):\n")
+      print(intercept)
+      cat("\nCoefficients:\n")
+      print(coefficients)
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{predict\textunderscore proba}}
+
+    Retourner les probabilités prédites pour chaque observation :
+    \begin{verbatim}
+    predict_proba = function(X_test) {
+      y_pred_probs <- self$forward(X_test)
+      return(y_pred_probs)
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{precision}}
+
+    Calculer la précision :
+    \begin{verbatim}
+    precision = function(y_true, y_pred) {
+      return(sum(y_true == y_pred) / length(y_true))
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{recall}}
+
+    Calculer le rappel :
+    \begin{verbatim}
+    recall = function(y_true, y_pred) {
+      return(sum((y_true == 1) & (y_pred == 1)) / sum(y_true == 1))
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{f1\textunderscore score}}
+
+    Calculer le score F1 :
+    \begin{verbatim}
+    f1_score = function(y_true, y_pred) {
+      prec <- self$precision(y_true, y_pred)
+      rec <- self$recall(y_true, y_pred)
+      return(2 * prec * rec / (prec + rec))
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{confusion\textunderscore matrix}}
+
+    Générer une matrice de confusion :
+    \begin{verbatim}
+    confusion_matrix = function(y_true, y_pred) {
+      K <- length(unique(c(y_true, y_pred)))
+      cm <- matrix(0, nrow = K, ncol = K)
+      for (i in 1:K) {
+        for (j in 1:K) {
+          cm[i, j] <- sum((y_true == (i - 1)) & (y_pred == (j - 1)))
+        }
+      }
+      return(cm)
+    }
+    \end{verbatim}
 
 	\subsection{Répertoire docs}
 

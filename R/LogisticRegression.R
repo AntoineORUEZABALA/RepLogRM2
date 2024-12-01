@@ -102,52 +102,51 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
     #' @return None. Prints the summary and optionally plots the feature importance.
     summary = function(class_names = NULL, plot_importance = TRUE, show_losses = TRUE) {
       self$print()
-      cat("\nModel Weights (if trained):\n")
 
       if (!is.null(self$weights)) {
-        intercept <- self$weights[1, , drop = FALSE]  # Intercept
-        coefficients <- self$weights[-1, , drop = FALSE]  # Coefficients (sans le biais)
+        cat("\nModel Weights :\n")
 
         if (self$classification_type == "binary") {
-          # Cas binaire : Construire une matrice de poids pour les deux classes
-          weights_binary <- cbind(-self$weights, self$weights)  # Classe négative et classe positive
-          rownames(weights_binary) <- c("(Intercept)", colnames(self$X_train))  # Ajouter noms des features
+          # Créer un objet temporaire pour l'affichage des coefficients triés
+          weights_binary_sorted <- self$weights[-1, , drop = FALSE][order(-abs(self$weights[-1, , drop = FALSE])), , drop = FALSE]
 
-          # Trier les coefficients par valeur absolue
-          weights_binary_sorted <- weights_binary[order(-abs(weights_binary[, 2])), , drop = FALSE]
+          # Remettre l'intercept enlevé à la ligne au-dessus.
+          weights_binary_sorted <- rbind(self$weights[1, , drop = FALSE], weights_binary_sorted)
+          # Nommer cette ligne "(Intercept)"
+          rownames(weights_binary_sorted)[1] <- "(Intercept)"
 
-          if (!is.null(class_names) && length(class_names) == 2) {
-            colnames(weights_binary_sorted) <- class_names  # Nommer les colonnes pour les deux classes
-          } else {
-            colnames(weights_binary_sorted) <- c("Class 0", "Class 1")  # Noms par défaut
-          }
+          # Ajouter le nom de la modalité de la variable explicative
+          colnames(weights_binary_sorted) <- c(class_names[1])
 
           cat("\nWeights (Binary Classification, sorted by absolute value):\n")
           print(weights_binary_sorted)
 
           # Préparer les données pour la visualisation
+          # Mettre dans feature_importance weights_binary_sorted en valeur absolue,
+          # et sans la première ligne
           feature_importance <- data.frame(
-            Feature = rownames(weights_binary_sorted)[-1],  # Exclure l'intercept
-            Importance = abs(weights_binary_sorted[-1, 2])  # Importance pour la classe positive
+            Feature = rownames(weights_binary_sorted)[-1], # Exclure l'intercept
+            Importance = abs(weights_binary_sorted[-1, 1]) # Importance pour la classe positive
           )
-
         } else if (self$classification_type == "softmax") {
           # Cas multinomial : Une colonne par classe
           if (!is.null(class_names)) {
             colnames(self$weights) <- class_names
           }
 
-          intercept <- self$weights[1, ]  # Intercepts pour chaque classe
-          coefficients <- self$weights[-1, , drop = FALSE]  # Coefficients sans les intercepts
+          intercept <- self$weights[1, ] # Intercepts pour chaque classe
+          coefficients <- self$weights[-1, , drop = FALSE] # Coefficients sans les intercepts
 
           # Calcul de l'importance totale (somme des valeurs absolues sur les classes)
           total_importance <- rowMeans(abs(coefficients))
 
+          # Préserver les noms des features avant le tri
+          feature_names <- rownames(coefficients)
+
           # Trier les coefficients par importance décroissante
           sorted_indices <- order(-total_importance)
           coefficients_sorted <- coefficients[sorted_indices, , drop = FALSE]
-
-          rownames(coefficients_sorted) <- colnames(self$X_train)[sorted_indices]  # Noms des features triés
+          rownames(coefficients_sorted) <- feature_names[sorted_indices] # Assigner les noms triés
 
           cat("Intercepts:\n")
           print(intercept)
@@ -164,13 +163,15 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
 
         # Afficher le graphique des importances si demandé
         if (plot_importance) {
-          p <- ggplot(feature_importance, aes(x = reorder(Feature, Importance), y = Importance)) +
+          graph <- ggplot(feature_importance, aes(x = reorder(Feature, Importance), y = Importance)) +
             geom_bar(stat = "identity") +
             coord_flip() +
-            labs(title = "Feature Importance in Logistic Regression",
-                 x = "Features", y = "Importance") +
+            labs(
+              title = "Feature Importance in Logistic Regression",
+              x = "Features", y = "Importance"
+            ) +
             theme_minimal()
-          print(p)
+          print(graph)
         }
       } else {
         cat("Model not trained yet.\n")
@@ -186,9 +187,7 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
           cat("No training losses available (model not trained).\n")
         }
       }
-    }
-    ,
-
+    },
     #' Sigmoid Activation Function
     #'
     #' This method applies the sigmoid activation function to the input.

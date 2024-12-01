@@ -1,6 +1,35 @@
-# README : Projet R M2 SISE
+# MIMOSA : A Mixed Input Multinomial Optimization for Statistical Analysis
 
 ## Description
+
+MIMOSA (for "Mixed Inputs Multinomial Optimization for Statistical Analysis") provides a custom implementation of logistic regression models, supporting both binary and multinomial classification tasks. The package handles explanatory variables of mixed types, including both quantitative and qualitative variables. It includes preprocessing utilities for missing value imputation, one-hot encoding of categorical variables, and normalization of numerical variables. Designed for flexibility and ease of use, MIMOSA is suitable for a wide range of logistic regression applications.
+
+## Installation
+
+Make sure you have R (>= 4.0.0) installed. The package relies on the following dependencies:
+
+R6
+caret
+ggplot2
+pmml
+
+If needed, you can install the required dependencies separately :
+```bash
+library(devtools)
+install.packages(c("R6", "caret", "ggplot2, "pmml"))
+```
+To install the package, please use the following code lines:
+```bash
+library(devtools)
+install_github("AntoineORUEZABALA/RepLogRM2")
+```
+And then to import it :
+```bash
+library(mimosa)
+```
+
+## Documentation
+
 Création d’un package proposant la méthode Régression logistique pour la classification supervisée avec la prise en charge de variables prédictives mixtes.
 
 Le coeur du package est un algorithme s'appuie sur une descente de gradient pour réaliser la régression. Nous l'avons nommé MIMOSA, pour Mixed Inputs Multinomial Optimization for Statistical Analysis.
@@ -9,7 +38,7 @@ Le package peut être installé directement à partir de GitHub. Il intègrer un
 
 Pour l'implémentation la variable cible doit être qualitative. Les « p » variables explicatives (p ≥ 1) sont de types quelconques (quantitatives ou qualitatives).
 
-Cette distribution  inclut également une application RShiny qui exploite le package Mimosa. Lors de l'utilisation de l'application, la préparation des données n'est pas nécessaire, elle sera réalisé par l'application elle même.
+Cette distribution inclut également une application RShiny qui exploite le package Mimosa. Lors de l'utilisation de l'application, la préparation des données n'est pas nécessaire, elle sera réalisé par l'application elle même.
 
 En revanche pour utiliser le package indépendemment, il faut réaliser la préparation adéquate :
 - imputation des valeurs manquantes, numériques et catégorielles,

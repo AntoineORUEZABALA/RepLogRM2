@@ -1,16 +1,22 @@
 # README : Projet R M2 SISE
 
 ## Description
-Création d’un package proposant la méthode Régression logistique pour la classification supervisée avec la prise en charge de variables prédictives mixtes
-Il doit pouvoir être installé directement à partir de GitHub et intègrer un fichier d’aide en anglais aux normes R.
+Création d’un package proposant la méthode Régression logistique pour la classification supervisée avec la prise en charge de variables prédictives mixtes.
 
-Pour l'implémentation la variable cible doit être qualitative. Les « p » variables explicatives (p ≥ 1) sont de types quelconques (quantitatives ou qualitatives),
-on doit soit réaliser la préparation adéquate pour harmoniser le type des données avant de procéder aux calculs soit adapter les calculs de manière à gérer directement les données mixtes.
-On doit programmer le cœur de l’algorithme en vous appuyant sur la descente de gradient. En revanche, vous pouvez faire appel à des packages externes pour les calculs annexes, il faut cependant s'assurer de l’exactitude des calculs, la robustesse et la rapidité d’exécution.
+Le coeur du package est un algorithme s'appuie sur une descente de gradient pour réaliser la régression. Nous l'avons nommé MIMOSA, pour Mixed Inputs Multinomial Optimization for Statistical Analysis.
 
-La classe de calcul est implementée selon la norme R6. Elle doit être constitué d'un constructeur, d'une méthode fit pour modéliser les données d'apprentissage, d'une fonction predict qui renvoie la classe prédite pour chaque individu, une fonction predict_proba qui renvoie les probabilités d’appartenance aux classes, une procédure print qui affiche les informations succintes sur le modèle et une procédure summary qui affiche les informations détaillées du modèle. Nous pouvons également nous servir une série de propriétés qui peuvent être exploitées par la suite.
+Le package peut être installé directement à partir de GitHub. Il intègrer un fichier d’aide en anglais aux normes R.
 
-Pour finir il nous faut également une application R Shiny de notre package qui permet de sélectionner un dataset, de choisir la variable cible et celles qui sont explicatives et enfin lancer les calculs et nous présenter les résultats obtenus.
+Pour l'implémentation la variable cible doit être qualitative. Les « p » variables explicatives (p ≥ 1) sont de types quelconques (quantitatives ou qualitatives).
+
+Cette distribution  inclut également une application RShiny qui exploite le package Mimosa. Lors de l'utilisation de l'application, la préparation des données n'est pas nécessaire, elle sera réalisé par l'application elle même.
+
+En revanche pour utiliser le package indépendemment, il faut réaliser la préparation adéquate :
+- imputation des valeurs manquantes, numériques et catégorielles,
+- normalisation (centrage et réduction) des données numériques,
+- encodage disjonctif des données catégorielles.
+
+La classe de calcul est implementée selon la norme R6. Elle est constitué d'un constructeur, d'une méthode fit pour modéliser les données d'apprentissage, d'une fonction predict qui renvoie la classe prédite pour chaque individu, une fonction predict_proba qui renvoie les probabilités d’appartenance aux classes, une procédure print qui affiche les informations succintes sur le modèle et une procédure summary qui affiche les informations détaillées du modèle.
 
 ## Table des Matières
 - [Description](#description)
@@ -35,9 +41,9 @@ git clone https://github.com/AntoineORUEZABALA/RepLogRM2
 install.packages('Nom du packages')
 ```
 
-4) Installer le package mimosa que nous avons crée
+4) Installer le package mimosa que nous avons créé
 ```bash
-install_github("Linn2d/mimosa")
+install_github("AntoineORUEZABALA/RepLogRM2@package")
 ```
 
 ## Utilisation

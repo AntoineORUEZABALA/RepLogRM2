@@ -705,32 +705,6 @@
 		\item et au format Latex : \texttt{Rapport.tex}
 	\end{itemize}
 
-	\section{Vérification des données}
-	% Inclus dans le initialize, c'est-à-dire appelé lors de l'instanciation de l'objet LogisticRegression
-	Afin de s'assurer de l'intégrité des données, nous procédons à plusieurs vérifications lors de l'instanciation de l'objet \textit{LogisticRegression}.
-
-	\subsection{Format des objets passés en argument}
-
-	Les deux vérifications suivantes sont réalisées à l'aide de la fonction \textit{check\textunderscore type} du fichier \textit{utils.r} :
-
-	\begin{enumerate}
-		\item les données explicatives $X$ doivent être dans un data.frame
-		\item la cible $y$ doit être un vecteur ou un character
-	\end{enumerate}
-
-	\subsection{Format des données}
-
-	\begin{enumerate}
-		\item Les données de la cible $y$ doivent être de type catégorielle (character ou factor).
-	\end{enumerate}
-
-	\subsection{Cohérence des données}
-
-	\begin{enumerate}
-		\item La cible $y$ doit être présente dans les données $X$,
-		\item il faut au moins deux modalités pour la variable cible $y$.
-	\end{enumerate}
-
 	\section{Pré-traitement des données}
 	% Étapes de traitement des données avant modélisation.
 

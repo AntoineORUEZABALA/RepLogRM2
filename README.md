@@ -38,7 +38,9 @@ git clone https://github.com/AntoineORUEZABALA/RepLogRM2
 
 3) Installez les librairies nécessaires au package (si ce n'est pas déjà fait) :
 ```bash
-install.packages('Nom du packages')
+install.packages('R6')
+install.packages('ggplot2')
+install.packages('caret')
 ```
 
 4) Installer le package mimosa que nous avons créé

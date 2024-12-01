@@ -8,14 +8,13 @@ MIMOSA (for "Mixed Inputs Multinomial Optimization for Statistical Analysis") pr
 
 Make sure you have R (>= 4.0.0) installed. The package relies on the following dependencies:
 
-R6
-caret
-ggplot2
-pmml
+-R6
+-caret
+-ggplot2
+-pmml
 
 If needed, you can install the required dependencies separately :
 ```bash
-library(devtools)
 install.packages(c("R6", "caret", "ggplot2, "pmml"))
 ```
 To install the package, please use the following code lines:

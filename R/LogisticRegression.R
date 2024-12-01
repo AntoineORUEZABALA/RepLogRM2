@@ -14,6 +14,13 @@
 #' @field reg_lambda A numeric value specifying the regularization strength.
 #' @field tolerance A numeric value specifying the convergence tolerance for early stopping.
 #' @field losses A numeric vector storing the loss values for each epoch during training.
+#' @field epoch An integer specifying the current epoch during training.
+#' @field intercept A numeric value storing the model's intercept.
+#' @field coefficients A numeric vector storing the model's coefficients.
+#' @field X_test A matrix or data frame representing the test features.
+#' @field y_test A vector representing the test labels.
+#' @field X_train A matrix or data frame representing the training features.
+#' @field y_train A vector representing the training labels.
 #'
 #' @export
 LogisticRegression <- R6::R6Class("LogisticRegression",
@@ -26,6 +33,13 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
     reg_lambda = 0.01,
     tolerance = 1e-4,
     losses = NULL,
+    epoch = NULL,
+    intercept = NULL,
+    coefficients = NULL,
+    X_test = NULL,
+    y_test = NULL,
+    X_train = NULL,
+    y_train = NULL,
 
     #'
     #' @description This method initializes the logistic regression model with specified parameters.
@@ -73,12 +87,16 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
     #'
     #' This method provides a detailed summary of the logistic regression model, including weights,
     #' feature importance, and training losses. It supports both binary and multinomial classification.
-    #' A visualization of feature importance is also included.
+    #' Optionally, a visualization of feature importance and the training loss history can be included.
     #'
     #' @param class_names An optional character vector specifying the names of the classes. If `NULL`,
     #'        default names ("Class 0", "Class 1", etc.) are used.
-    #' @return None. Prints the summary and plots the feature importance.
-    summary = function(class_names = NULL) {
+    #' @param plot_importance A logical value indicating whether to display a bar plot of feature importance.
+    #'        Default is `TRUE`.
+    #' @param show_losses A logical value indicating whether to display the training loss history.
+    #'        Default is `TRUE`.
+    #' @return None. Prints the summary and optionally plots the feature importance.
+    summary = function(class_names = NULL, plot_importance = TRUE, show_losses = TRUE) {
       self$print()
       cat("\nModel Weights (if trained):\n")
 
@@ -89,7 +107,7 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
         if (self$classification_type == "binary") {
           # Cas binaire : Construire une matrice de poids pour les deux classes
           weights_binary <- cbind(-self$weights, self$weights)  # Classe négative et classe positive
-          rownames(weights_binary) <- c("(Intercept)", colnames(X_train))  # Ajouter noms des features
+          rownames(weights_binary) <- c("(Intercept)", colnames(self$X_train))  # Ajouter noms des features
 
           # Trier les coefficients par valeur absolue
           weights_binary_sorted <- weights_binary[order(-abs(weights_binary[, 2])), , drop = FALSE]
@@ -103,7 +121,7 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
           cat("\nWeights (Binary Classification, sorted by absolute value):\n")
           print(weights_binary_sorted)
 
-          # Visualisation
+          # Préparer les données pour la visualisation
           feature_importance <- data.frame(
             Feature = rownames(weights_binary_sorted)[-1],  # Exclure l'intercept
             Importance = abs(weights_binary_sorted[-1, 2])  # Importance pour la classe positive
@@ -125,7 +143,7 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
           sorted_indices <- order(-total_importance)
           coefficients_sorted <- coefficients[sorted_indices, , drop = FALSE]
 
-          rownames(coefficients_sorted) <- colnames(X_train)[sorted_indices]  # Noms des features triés
+          rownames(coefficients_sorted) <- colnames(self$X_train)[sorted_indices]  # Noms des features triés
 
           cat("Intercepts:\n")
           print(intercept)
@@ -133,32 +151,36 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
           cat("\nCoefficients (sorted by absolute value across all classes):\n")
           print(coefficients_sorted)
 
-          # Visualisation
+          # Préparer les données pour la visualisation
           feature_importance <- data.frame(
             Feature = rownames(coefficients_sorted),
             Importance = total_importance[sorted_indices]
           )
         }
 
-        # Graphique des importances
-        p<- ggplot(feature_importance, aes(x = reorder(Feature, Importance), y = Importance)) +
-          geom_bar(stat = "identity") +
-          coord_flip() +
-          labs(title = "Feature Importance in Logistic Regression",
-               x = "Features", y = "Importance") +
-          theme_minimal()
-        print(p)
-
+        # Afficher le graphique des importances si demandé
+        if (plot_importance) {
+          p <- ggplot(feature_importance, aes(x = reorder(Feature, Importance), y = Importance)) +
+            geom_bar(stat = "identity") +
+            coord_flip() +
+            labs(title = "Feature Importance in Logistic Regression",
+                 x = "Features", y = "Importance") +
+            theme_minimal()
+          print(p)
+        }
       } else {
         cat("Model not trained yet.\n")
       }
 
-      cat("\nTraining Losses:\n")
-      if (!is.null(self$losses)) {
-        print(self$losses)
-        cat(sprintf("Final Loss: %.6f\n", tail(self$losses, 1)))
-      } else {
-        cat("No training losses available (model not trained).\n")
+      # Afficher les pertes d'entraînement si demandé
+      if (show_losses) {
+        cat("\nTraining Losses:\n")
+        if (!is.null(self$losses)) {
+          print(self$losses)
+          cat(sprintf("Final Loss: %.6f\n", tail(self$losses, 1)))
+        } else {
+          cat("No training losses available (model not trained).\n")
+        }
       }
     }
     ,
@@ -335,6 +357,9 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
           cat(sprintf("Reducing learning rate to %.6f at epoch %d\n", self$learning_rate, epoch))
         }
       }
+      # Assign intercept and coefficients after training
+      self$intercept <- self$weights[1, , drop = FALSE]
+      self$coefficients <- self$weights[-1, , drop = FALSE]
     },
 
     #' Predict Class Labels

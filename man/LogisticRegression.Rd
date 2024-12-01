@@ -25,6 +25,20 @@ It supports L1 and L2 regularization, as well as early stopping based on loss co
 \item{\code{tolerance}}{A numeric value specifying the convergence tolerance for early stopping.}
 
 \item{\code{losses}}{A numeric vector storing the loss values for each epoch during training.}
+
+\item{\code{epoch}}{An integer specifying the current epoch during training.}
+
+\item{\code{intercept}}{A numeric value storing the model's intercept.}
+
+\item{\code{coefficients}}{A numeric vector storing the model's coefficients.}
+
+\item{\code{X_test}}{A matrix or data frame representing the test features.}
+
+\item{\code{y_test}}{A vector representing the test labels.}
+
+\item{\code{X_train}}{A matrix or data frame representing the training features.}
+
+\item{\code{y_train}}{A vector representing the training labels.}
 }
 \if{html}{\out{</div>}}
 }
@@ -108,7 +122,7 @@ Summary of the Logistic Regression Model
 
 This method provides a detailed summary of the logistic regression model, including weights,
 feature importance, and training losses. It supports both binary and multinomial classification.
-A visualization of feature importance is also included.
+Optionally, a visualization of feature importance and the training loss history can be included.
 }
 }
 \if{html}{\out{<hr>}}
@@ -116,7 +130,11 @@ A visualization of feature importance is also included.
 \if{latex}{\out{\hypertarget{method-LogisticRegression-summary}{}}}
 \subsection{Method \code{summary()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{LogisticRegression$summary(class_names = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{LogisticRegression$summary(
+  class_names = NULL,
+  plot_importance = TRUE,
+  show_losses = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -124,11 +142,17 @@ A visualization of feature importance is also included.
 \describe{
 \item{\code{class_names}}{An optional character vector specifying the names of the classes. If \code{NULL},
 default names ("Class 0", "Class 1", etc.) are used.}
+
+\item{\code{plot_importance}}{A logical value indicating whether to display a bar plot of feature importance.
+Default is \code{TRUE}.}
+
+\item{\code{show_losses}}{A logical value indicating whether to display the training loss history.
+Default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-None. Prints the summary and plots the feature importance.
+None. Prints the summary and optionally plots the feature importance.
 Sigmoid Activation Function
 
 This method applies the sigmoid activation function to the input.

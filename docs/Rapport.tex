@@ -61,6 +61,9 @@
 % Pour créer des conditions dans les commandes customisées
 \usepackage{ifthen}
 
+\usepackage{amsmath}
+\usepackage{longtable}
+
 
 % Commande customisée pour dessiner un cube noir, pour faire séparateur
 \newcommand{\cube}{\raisebox{0.13ex}{\scalebox{0.75}{ $\blacksquare$ }}}
@@ -134,20 +137,57 @@
 	\subsection{Principes Généraux}
 	% Description du modèle multinomial et de ses applications.
 	La régression logistique est un modèle statistique permettant d'étudier les relations entre un ensemble de variables Xi et une variable qualitative y. Elle permet de prédire la probabilité qu'un événement arrive (valeur de 1) ou non (valeur de 0) à partir de l'optimisation des coefficients de régression.
-	
+
 	On distingue trois types de régression logistique :
 	\begin{enumerate}
-		\item La régression logistique binaire. Elle vise à prédire la probabilité qu'un événement binaire se produise (oui/non, 1/0) en fonction de variables explicatives. Elle utilise une fonction logistique (ou sigmoïde) pour transformer la combinaison linéaire des variables explicatives en une probabilité comprise entre 0 et 1.
-		\item La régression logistique \textbf{multinomiale} est une généralisation de la régression logistique binaire. Elle permet d'estimer la probabilité d'appartenance à chacune des catégories en fonction de variables explicatives quantitatives et/ou qualitatives. Contrairement à la régression logistique binaire qui modélise une seule probabilité $p$, la régression logistique multinomiale estime simultanément les probabilités d'appartenance à toutes les catégories ($p_1, p_2, ..., p_K$), avec la contrainte que leur somme soit égale à 1.
+		\item La régression logistique binaire. Elle vise à prédire la probabilité qu'un événement binaire se produise (oui/non, 1/0) en fonction de variables explicatives. Elle utilise la fonction sigmoïde pour transformer la combinaison linéaire des variables explicatives en une probabilité comprise entre 0 et 1.
+		\item La régression logistique \textbf{multinomiale} est une généralisation de la régression logistique binaire. Elle permet d'estimer la probabilité d'appartenance à chacune des catégories en fonction de variables explicatives quantitatives et/ou qualitatives. Contrairement à la régression logistique binaire qui modélise une seule probabilité $p$, la régression logistique multinomiale estime simultanément les probabilités d'appartenance à toutes les catégories ($p_1, p_2, ..., p_K$) avec la fonction softmax, et avec la contrainte que leur somme soit égale à 1.
 		\item La régression logistique ordinale. Ce type de modèle de régression logistique est utilisé lorsque la variable de réponse a trois modalités possibles ou plus et que ces dernières ont un ordre défini.
 	\end{enumerate}
-	
-	Ce document ne traitera sauf mention contraire que la régression logistique multinomiale nominale, c'est-à-dire que l'on ne suppose aucun ordre particulier entre les modalités de la variable à prédire.
 
-    \subsection{Modélisation mathématique\cite{makisreglog}}
-    
+	Dans ce document, nous ne supposerons aucun ordre particulier entre les modalités de la variable à prédire.
+
+    \subsection{Modélisation mathématique}
+
+    \subsubsection{Notations}
+
+    Soit une population $\Omega$ de $n$ individus, définie par $J$ variables explicatives notées $\left\{X_{1}, \ldots,X_{J}\right\}$, et une variable cible $Y$ possédant $K$ valeurs :
+
+    \begin{tblr}{
+            colspec = {X[4,c]X[4,c]X[4,c]X[4,c]X[4,c]},
+            rowspec = {Q[m]Q[m]Q[m]Q[m]Q[m]},
+            rowsep = 5pt,
+            hlines,
+            vlines,
+        }
+        $\Omega$ & Cible & $X_{1}$ & $\ldots$ & $X_{J}$ \\
+        1 & $Y_{1}$ &  &  &  \\
+        $\ldots$ & $\ldots$ &  &  &  \\
+        $\omega$ & $Y_{\omega}$ & $X_{1}\left(\omega\right)$ & $\ldots$ & $X_{J}\left(\omega\right)$ \\
+        $\ldots$ & $\ldots$ &  &  &  \\
+        $n$ & $Y_{K}$ &  &  &  \\
+    \end{tblr}
+
+    Dans le cas binaire, la probabilité d'un individu $\omega$ d'être positif à priori se note $p$ par commodité, pour simplifier $p\left(\omega\right)$, lui-même une notation simplifiée de $P\left[Y\left(\omega\right)=+\right]$.
+
+    Toujours dans le cas binaire, la probabilité d'un individu $\omega$ d'être positif à posteriori, c'est-à-dire la probabilité que l'on modélisera en apprentissage supervisée, se note $\pi$ par commodité, pour simplifier $\pi\left(\omega\right)$, lui-même une notation simplifiée de $P\left[Y\left(\omega\right)=+/X\left(\omega\right)\right]$.
+
+    La fonction LOGIT pour cet individu $\omega$ est :
+
+    \begin{equation}
+        \text{LOGIT}(\omega) = \ln\left[\frac{\pi(\omega)}{1-\pi(\omega)}\right] = a_0 + a_1X_1\left(\omega\right) + \cdots + a_JX_J\left(\omega\right)
+    \end{equation}
+
+    Soit en écriture matricielle :
+
+    \begin{equation}
+        \ln\left[\frac{\pi(\omega)}{1-\pi(\omega)}\right] = X\left(\omega\right) \times a
+    \end{equation}
+
+    Avec $a_0, \ldots, a_J$ les paramètres que l'on souhaite estimer.
+
     \subsubsection{Formulation du problème}
-    
+
     Soit :
     \begin{itemize}
     	\item $Y$ une variable catégorielle cible prenant $K$ valeurs distinctes : $\{1, 2, \dots, K\}$,
@@ -155,31 +195,31 @@
     	\item $\boldsymbol{\beta}_k$ est un vecteur des coefficients associés à la classe $k$,
     	\item $P(Y = k \mid X = \mathbf{x})$ est la probabilité conditionnelle pour chaque classe $k \in \{1, 2, \dots, K\}$.
     \end{itemize}
-    
+
     \subsubsection{Colinéarité}
-    
+
     Pour éviter les problèmes de colinéarités, on choisit une classe de référence que l'on exclut de la modélisation.
-    
+
     Les probabilités des $k-1$ classes se calculent avec :
-    
+
     \begin{equation}
     	P_k = \frac{e^{C_k}}{1+\sum_{k=1}^{K-1}e^{C_k}}
     \end{equation}
-    
+
     Avec $C_k$ le logit pour la modalité $k$ de $Y$; et comme indiqué précédemment $k \in \{1, 2, \dots, K-1\}$.
-    
+
     La probabilité pour la classe de référence $K$ peut être déduite après coup :
-    
+
     \begin{equation}
     	P_K = 1 - \sum_{k=1}^{K-1}P_k
     \end{equation}
-    
+
     \section{La descente de gradient}
-    
+
     L'estimation des coefficients $\beta$ peut se faire par descente de gradient.
-    
+
     La descente de gradient est un algorithme d'optimisation itératif, qui permet de trouver le minimum d'une fonction.
-    
+
     L'idée est la suivante :
     \begin{itemize}
     	\item on part d'un point choisi aléatoirement,
@@ -187,14 +227,14 @@
     	\item et nous descendons d'un pas dans la direction opposé au gradient,
     	\item nous recommençons le processus à partir du nouveau point atteint.
     \end{itemize}
-    
+
     Les critères pour s'arrêter peuvent être :
     \begin{itemize}
     	\item le nombre d'itérations; on définit un maximum au début de l'algorithme, que l'on ne dépasse pas,
     	\item la différence de "niveau" entre deux points; si elle passe en dessous d'un seuil très faible, l'approximation est jugée suffisamment bonne,
     	\item une combinaison de ces deux critères, qui a l'avantage de s'arrêter le plus tôt possible.
     \end{itemize}
-    
+
     Vocabulaire :
     \begin{itemize}
     	\item la taille du pas est dénommé taux d'apprentissage (en anglais learning rate),
@@ -202,12 +242,12 @@
     	\item
     	\item
     \end{itemize}
-    
+
     Mathématiquement, la pente est définie par le gradient. La taille du pas est dénommé taux d'apprentissage.
-    
+
     Il existe trois types d'algorithmes d'apprentissage par descente de gradient : la descente de gradient simple (sur tous les points), la descente de gradient stochastique et la descente de gradient par mini-lots.
-    
-    
+
+
 	\subsection{Fonction de Coût}
 	% Explication de la fonction d'erreur cross-entropy catégorielle.
 	La fonction de coût utilisée pour la régression logistique multinomiale est la cross-entropie catégorielle. Elle évalue la divergence entre les probabilités prédites par le modèle et les probabilités réelles des classes. Elle est définie comme suit :
@@ -235,13 +275,96 @@
 
 	L'utilisation de la fonction \textit{SoftMax} implique également que les classes sont mutuellement exclusives, ce qui signifie qu'une observation ne peut appartenir qu'à une seule classe. Cela correspond à la nature des problèmes de classification multinomiale où le but est de prédire une seule catégorie parmi plusieurs possibles.
 
-	\section{L'algorithme de descente de gradient}
+	\section{Algorithmes de descente de gradient}
 
-	
 	\subsection{Modélisation}
 
-	\subsection{Test}
+    Il s'agit aussi d'un algorithme itératif, dont l'objectif est de trouver le minimum d'une fonction $f\left(x\right)$ en partant d'un point arbitraire $x_0$. On se \enquote{déplace} pour cela dans la direction opposée au gradient, c'est-à-dire que l'on \enquote{descend} le long de la pente.
 
+    Mathématiquement, on part d'une valeur arbitraire $x_0$, puis pour trouver $x_1$ on utilise la formule suivante :
+
+    \begin{equation}
+        x_{n+1} = x_n - \alpha \nabla f\left(x_n\right)
+    \end{equation}
+
+    Avec :
+    \begin{itemize}
+        \item $x_n$ la position actuelle,
+        \item $\alpha$ le taux d'apprentissage,
+        \item $\nabla f\left(x_n\right)$ le gradient de la fonction au point $x_n$
+    \end{itemize}
+
+    Les étapes sont donc les suivantes :
+    \begin{itemize}
+        \item choisir un point $x_0$ arbitraire pour commencer les calculs,
+        \item calculer le gradient à ce point,
+        \item mettre à jour la position en se déplaçant dans la direction opposée,
+        \item vérifier que l'on a atteint un critère d'arrêt :
+        \begin{itemize}
+            \item nombre d'itérations maximum atteint,
+            \item ou précision souhaitée (différence entre deux itérations) atteinte,
+			\item ou norme du gradient devient suffisamment petite (proche d'un point critique),
+			\item ou variation des paramètres entre deux itérations devient très petite,
+			\item ou utilisation de plusieurs critères simultanément pour garantir une convergence robuste.
+        \end{itemize}
+		\item vérifier que le point obtenu satisfait réellement les conditions nécessaires pour être un minimum local :
+		\begin{itemize}
+			\item la norme du gradient $(\vert \vert)\nabla f\left(x^\star\right)(\vert \vert)$ est proche de zéro, 
+			\item la matrice hessienne $\nabla^2 f\left(x^\star\right)$ (si calculable) est définie positive, confirmant que $x^\star$ est un minimum local.
+		\end{itemize}
+		\item calculer la valeur de $f(x^\star)$ pour s'assurer qu'elle est acceptable par rapport aux exigences du problème.
+        \item vérifier si la solution $x^\star$ est cohérente et utile dans le cadre du problème initial.
+		\item tester la solution obtenue.
+		\item si la solution obtenue n'est pas satisfaisante , des méthodes complémentaires peuvent être utilisées :
+		\begin{itemize}
+			\item relancer la descente de gradient à partir d'un autre point initial pour explorer d'autres minima.
+			\item compléter par une recherche globale .
+			\item si le critère d'arrêt a été atteint trop tôt à cause d'un pas mal adapté, réajuster les paramètres.
+		\end{itemize}
+    \end{itemize}
+
+
+	\subsection{Test}
+    
+    Les tests permettent de quantifier la qualité d’un modèle lorsque l'on rajoute une variable supplémentaire. 
+
+	Nous avons trois tests : 
+	\begin{itemize}
+		\item le test de Wald  
+		\item le test du rapport de vraisemblance 
+		\item le test du score de Rao 
+	\end{itemize}
+	
+	Nous allons maintenant présenter les formules de ces tests.
+
+    La statistique du test de Wald:
+
+	\begin{equation}
+		Z_j = sign(\beta_j) \cdot \frac{\beta_j}{\sigma_{\beta_j}}
+	\end{equation}
+	
+	où $\beta_j$ désigne le coefficient estimé de la variable $X^j$ et de $\sigma_{\beta_j}$ son écart-type.
+
+	La statistique du test suit un loi normale centrée-réduite et l’hypothèse $H_0$ est que coefficient estimé est nul.
+
+    La statistique du test de rapport de vraisemblance:
+
+	\begin{equation}
+	D = -2 ln (\frac{\mbox{Vraisemblance modele de reference}}{\mbox{Vraisemblance modele d'interet}})
+	\end{equation}
+
+	La statistique de test suit une loi du $\chi^2$ de paramètre $(df_1 - df_2)$ où $df_k$ désigne le nombre de variables du modèle $k$. L’hypothèse $H_0$ est que les modèles sont semblables.
+
+    La statistique du test du Score de Rao:
+
+	\begin{equation}
+	R = U_{H_0} ^T (\beta) I_{H_0} ^{-1} (\beta) U_{H_0} (\beta)
+	\end{equation}
+
+	Où $U_{H_0}$ est la matrice des dérivées partielles de la log-vraisemblance et $I$ la matrice d’information.
+
+	La statistique de test suit une loi du $\chi ^2$ de paramètre $P$. L’hypothèse $H_0$ est que les coefficients sont nuls.
+    
 	\chapter{Implémentation Pratique en R}
 
 	\section{Structure du programme}
@@ -327,6 +450,253 @@
 		}
 	\end{verbatim}
 
+    \subsubsection{Fonction \enquote*{summary}}
+    Affiche les informations du modèle 
+    \begin{verbatim}
+    summary = function(class_names = NULL) {
+      self$print()
+      cat("\nModel Weights (if trained):\n")
+
+      if (!is.null(self$weights)) {
+        intercept <- self$weights[1, , drop = FALSE]  
+        coefficients <- self$weights[-1, , drop = FALSE]  
+
+        if (self$classification_type == "binary") {
+          weights_binary <- cbind(-self$weights, self$weights)  
+          rownames(weights_binary) <- c("(Intercept)", colnames(X_train)) 
+
+          weights_binary_sorted <- weights_binary[order(-abs(weights_binary[, 2])), 
+          , drop = FALSE]
+
+          if (!is.null(class_names) && length(class_names) == 2) {
+            colnames(weights_binary_sorted) <- class_names  
+          } else {
+            colnames(weights_binary_sorted) <- c("Class 0", "Class 1") 
+          }
+
+          cat("\nWeights (Binary Classification, sorted by absolute value):\n")
+          print(weights_binary_sorted)
+
+          feature_importance <- data.frame(
+            Feature = rownames(weights_binary_sorted)[-1],  
+            Importance = abs(weights_binary_sorted[-1, 2])  
+          )
+
+        } else if (self$classification_type == "softmax") {
+          if (!is.null(class_names)) {
+            colnames(self$weights) <- class_names
+          }
+
+          intercept <- self$weights[1, ]  
+          coefficients <- self$weights[-1, , drop = FALSE]  
+
+          total_importance <- rowMeans(abs(coefficients))
+
+          sorted_indices <- order(-total_importance)
+          coefficients_sorted <- coefficients[sorted_indices, , drop = FALSE]
+
+          rownames(coefficients_sorted) <- colnames(X_train)[sorted_indices]  
+
+          cat("Intercepts:\n")
+          print(intercept)
+
+          cat("\nCoefficients (sorted by absolute value across all classes):\n")
+          print(coefficients_sorted)
+
+          feature_importance <- data.frame(
+            Feature = rownames(coefficients_sorted),
+            Importance = total_importance[sorted_indices]
+          )
+        }
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{forward}}
+
+    Effectue une propagation en amont dans le modèle :
+    \begin{verbatim}
+    forward = function(x) {
+      x_with_bias <- cbind(1, x)
+      z <- x_with_bias %*% self$weights
+
+      if (self$classification_type == "binary") {
+        return(self$sigmoid(z))
+      } else if (self$classification_type == "softmax") {
+        return(self$softmax(z))
+      }
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{log\textunderscore loss}}
+
+    Implémente la fonction de perte logistique pour une classification binaire :
+    \begin{verbatim}
+    log_loss = function(y_true, y_pred) {
+      y_pred <- pmin(pmax(y_pred, 1e-15), 1 - 1e-15)
+      return(-mean(y_true * log(y_pred) + (1 - y_true) * log(1 - y_pred)))
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{cross\textunderscore  entropy\textunderscore loss}}
+
+    Implémente la perte par entropie croisée pour une classification multiclasse :
+    \begin{verbatim}
+    log_loss = function(y_true, y_pred) {
+      y_pred <- pmin(pmax(y_pred, 1e-15), 1 - 1e-15)
+      return(-mean(y_true * log(y_pred) + (1 - y_true) * log(1 - y_pred)))
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{update\textunderscore  weights}}
+
+    Met à jour les poids du modèle :
+    \begin{verbatim}
+    update_weights = function(x, y) {
+      if (self$classification_type == "softmax") {
+        y <- as.integer(y)
+        y_one_hot <- matrix(0, nrow = nrow(x), ncol = ncol(self$weights))
+        y_one_hot[cbind(1:nrow(x), y + 1)] <- 1
+      }
+      y_pred <- self$forward(x)
+      if (self$classification_type == "binary") {
+        error <- y_pred - y
+      } else if (self$classification_type == "softmax") {
+        error <- y_pred - y_one_hot
+      }
+      gradient <- t(cbind(1, x)) %*% error / nrow(x)
+
+      if (self$regularization == "l2") {
+        gradient[-1, ] <- gradient[-1, ] + self$reg_lambda * 
+        self$weights[-1, ] / nrow(x)
+      } else if (self$regularization == "l1") {
+        gradient[-1, ] <- gradient[-1, ] + self$reg_lambda * 
+        sign(self$weights[-1, ]) / nrow(x)
+      }
+      self$weights <- self$weights - self$learning_rate * gradient
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{fit}}
+
+    Entraîne le modèle pour minimiser la perte :
+    \begin{verbatim}
+    fit = function(X_train, y_train) {
+      input_dim <- ncol(X_train)
+      num_classes <- if (self$classification_type == "binary") 1 else 
+      length(unique(y_train))
+      self$initialize_weights(input_dim, num_classes)
+
+      self$losses <- c()
+      for (epoch in 1:self$max_iter) {
+        for (i in 1:nrow(X_train)) {
+          self$update_weights(X_train[i, , drop = FALSE], y_train[i])
+        }
+        y_pred <- self$forward(X_train)
+        if (self$classification_type == "binary") {
+          loss <- self$log_loss(y_train, y_pred)
+        } else if (self$classification_type == "softmax") {
+          loss <- self$cross_entropy_loss(y_train, y_pred)
+        }
+        self$losses <- c(self$losses, loss)
+        cat(sprintf("Epoch %d: Loss = %.4f\n", epoch, loss))
+        if (epoch > 1 && abs(self$losses[epoch] - self$losses[epoch - 1]) 
+        < self$tolerance) {
+          cat(sprintf("Converged at epoch %d with loss %.4f\n", epoch, loss))
+          break
+        }
+        if (epoch > 1 && self$losses[epoch] > self$losses[epoch - 1]) {
+          self$learning_rate <- self$learning_rate * 0.5
+          cat(sprintf("Reducing learning rate to %.6f at epoch %d\n", 
+          self$learning_rate, epoch))
+        }
+      }
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{predict}}
+
+    Générer des prédictions finales pour les données d’entrée :
+    \begin{verbatim}
+    predict = function(X_test) {
+      y_pred_probs <- self$forward(X_test)
+      if (self$classification_type == "binary") {
+        y_pred <- as.integer(y_pred_probs >= 0.5)
+      } else if (self$classification_type == "softmax") {
+        y_pred <- max.col(y_pred_probs) - 1
+      }
+      return(y_pred)
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{print\textunderscore weights}}
+
+    Afficher les poids et les intercepts du modèle :
+    \begin{verbatim}
+    print_weights = function() {
+      intercept <- self$weights[1, ]
+      coefficients <- self$weights[-1, , drop = FALSE]
+      cat("Intercept(s):\n")
+      print(intercept)
+      cat("\nCoefficients:\n")
+      print(coefficients)
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{predict\textunderscore proba}}
+
+    Retourner les probabilités prédites pour chaque observation :
+    \begin{verbatim}
+    predict_proba = function(X_test) {
+      y_pred_probs <- self$forward(X_test)
+      return(y_pred_probs)
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{precision}}
+
+    Calculer la précision :
+    \begin{verbatim}
+    precision = function(y_true, y_pred) {
+      return(sum(y_true == y_pred) / length(y_true))
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{recall}}
+
+    Calculer le rappel :
+    \begin{verbatim}
+    recall = function(y_true, y_pred) {
+      return(sum((y_true == 1) & (y_pred == 1)) / sum(y_true == 1))
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{f1\textunderscore score}}
+
+    Calculer le score F1 :
+    \begin{verbatim}
+    f1_score = function(y_true, y_pred) {
+      prec <- self$precision(y_true, y_pred)
+      rec <- self$recall(y_true, y_pred)
+      return(2 * prec * rec / (prec + rec))
+    }
+    \end{verbatim}
+
+    \subsubsection{Fonction \enquote*{confusion\textunderscore matrix}}
+
+    Générer une matrice de confusion :
+    \begin{verbatim}
+    confusion_matrix = function(y_true, y_pred) {
+      K <- length(unique(c(y_true, y_pred)))
+      cm <- matrix(0, nrow = K, ncol = K)
+      for (i in 1:K) {
+        for (j in 1:K) {
+          cm[i, j] <- sum((y_true == (i - 1)) & (y_pred == (j - 1)))
+        }
+      }
+      return(cm)
+    }
+    \end{verbatim}
+    
 	\subsection{Répertoire docs}
 
 	Il contient :
@@ -390,92 +760,158 @@
 	Cette dernière étape permet d'éviter la colinéarité, c'est-à-dire la redondance d'information entre variables (une variable désignant ici une des colonnes produites par le one-hot encoding; c'est-à-dire une des modalités de la variable encodée).
 	%
 
-	\chapter{Éléments introductifs}
+    \chapter{Analyse des résultats obtenus}
 
-	\section{La régression logistique}
+    \section{Datasets}
 
-	Quelle soit binaire (la variable cible possède deux modalités) ou multinomiale (la variable cible possède plus de deux modalités), le principe de la régression logistique est de maximiser la vraisemblance, ou pour le dire autrement, de minimiser la déviance.
-
-	Quel outil pour mesurer ce paramètre ? La log-vraisemblance.
-
-    \subsection{Notations}
-
-    Soit une population $\Omega$ de $n$ individus, définie par $J$ variables explicatives notées $\left\{X_{1}, \ldots,X_{J}\right\}$, et une variable cible $Y$ possédant $K$ valeurs :
-
-    \begin{tblr}{
-            colspec = {X[4,c]X[4,c]X[4,c]X[4,c]X[4,c]},
-            rowspec = {Q[m]Q[m]Q[m]Q[m]Q[m]},
-            rowsep = 5pt,
-            hlines,
-            vlines,
-        }
-        $\Omega$ & Cible & $X_{1}$ & $\ldots$ & $X_{J}$ \\
-        1 & $Y_{1}$ &  &  &  \\
-        $\ldots$ & $\ldots$ &  &  &  \\
-        $\omega$ & $Y_{\omega}$ & $X_{1}\left(\omega\right)$ & $\ldots$ & $X_{J}\left(\omega\right)$ \\
-        $\ldots$ & $\ldots$ &  &  &  \\
-        $n$ & $Y_{K}$ &  &  &  \\
-    \end{tblr}
-
-    Dans le cas binaire, la probabilité d'un individu $\omega$ d'être positif à priori se note $p$ par commodité, pour simplifier $p\left(\omega\right)$, lui-même une notation simplifiée de $P\left[Y\left(\omega\right)=+\right]$.
-
-    Toujours dans le cas binaire, la probabilité d'un individu $\omega$ d'être positif à posteriori, c'est-à-dire la probabilité que l'on modélisera en apprentissage supervisée, se note $\pi$ par commodité, pour simplifier $\pi\left(\omega\right)$, lui-même une notation simplifiée de $P\left[Y\left(\omega\right)=+/X\left(\omega\right)\right]$.
-
-    La fonction LOGIT pour cet individu $\omega$ est :
-
-    \begin{equation}
-        \text{LOGIT}(\omega) = \ln\left[\frac{\pi(\omega)}{1-\pi(\omega)}\right] = a_0 + a_1X_1\left(\omega\right) + \cdots + a_JX_J\left(\omega\right)
-    \end{equation}
-
-    Soit en écriture matricielle :
-
-    \begin{equation}
-        \ln\left[\frac{\pi(\omega)}{1-\pi(\omega)}\right] = X\left(\omega\right) \times a
-    \end{equation}
-
-    Avec $a_0, \ldots, a_J$ les paramètres que l'on souhaite estimer.
-
-	\subsection{Algorithmes}
-
-    Un algorithme utilisé pour optimiser la log-vraisemblance est celui de Newton-Raphson. Il s'agit d'une approche itérative, qui utilise la dérivée de la fonction considérée pour approcher une solution.
-
-    Il a toutefois pour défaut d'utiliser la matrice hessienne, qui peut être coûteuse en mémoire et temps de calcul.
-
-    Nous expliquerons et utiliserons un autre algorithme ici, la descente de gradient.
-
-    Il s'agit aussi d'un algorithme itératif, dont l'objectif est de trouver le minimum d'une fonction $f\left(x\right)$ en partant d'un point arbitraire $x_0$. On se \enquote{déplace} pour cela dans la direction opposée au gradient, c'est-à-dire que l'on \enquote{descend} le long de la pente.
-
-    Mathématiquement, on part d'une valeur arbitraire $x_0$, puis pour trouver $x_1$ on utilise la formule suivante :
-
-    \begin{equation}
-        x_{n+1} = x_n - \alpha \nabla f\left(x_n\right)
-    \end{equation}
-
-    Avec :
+    \subsection{Jeu de données : DPE Nettoyé}
+    
+    \subsubsection{Caractéristiques générales :}
     \begin{itemize}
-        \item $x_n$ la position actuelle,
-        \item $\alpha$ le taux d'apprentissage,
-        \item $\nabla f\left(x_n\right)$ le gradient de la fonction au point $x_n$
+        \item Nombre de lignes : 236316
+        \item Nombre de colonnes : 22
     \end{itemize}
 
-    Les étapes sont donc les suivantes :
+    \subsection{Jeu de données : Gym Membership}
+    
+    \subsubsection{Caractéristiques générales :}
     \begin{itemize}
-        \item choisir un point $x_0$ arbitraire pour commencer les calculs,
-        \item calculer le gradient à ce point,
-        \item mettre à jour la position en se déplaçant dans la direction opposée,
-        \item vérifier que l'on a atteint un critère d'arrêt :
-        \begin{itemize}
-            \item nombre d'itérations maximum atteint,
-            \item et/ou précision souhaitée (différence entre deux itérations) atteinte,
-        \end{itemize}
+        \item Nombre de lignes : 973
+        \item Nombre de colonnes : 16
     \end{itemize}
 
-	\subsection{Champs d'application}
+    \subsection{Jeu de données : Breast Cancer}
+    
+    \subsubsection{Caractéristiques générales :}
+    \begin{itemize}
+        \item Nombre de lignes : 569
+        \item Nombre de colonnes : 30
+    \end{itemize}
 
-    La régression logistique n'émet pas d'hypothèse directement sur les distributions des probabilités $P\left(X/Y=+\right)$ et $P\left(X/Y=-\right)$, mais uniquement sur leur rapport.
+    \section{Comparaison avec glm et multinom}
 
-    Elle permet donc, en théorie, une application plus large, et est nommé semi-paramétrique, pour la différencier des modèles qui supposent une loi donnée sur la distribution des probabilités.
+    Dans notre package, nous avons utilisé glm pour la régression logistique pour les variables binaires et multinom pour les variables multinomiales.
 
+    \subsection{Modèle binaire : glm}
+
+    \begin{flushleft}
+    \textbf{Call:} \\
+    glm(formula = formula, family = binomial(), data = data)
+    \end{flushleft}
+
+    \begin{flushleft}
+    \textbf{Coefficients:}
+    \end{flushleft}
+
+    \begin{longtable}{lcccc}
+    \hline
+    \textbf{Variable} & \textbf{Estimate} & \textbf{Std. Error} & \textbf{z value} & \textbf{Pr(>|z|)} \\
+    \hline
+    \endfirsthead
+    \hline
+    (Intercept) & 0.902404 & 1.355354 & 0.666 & 0.506 \\
+    AdmitRejected & 0.476698 & 0.954534 & 0.499 & 0.617 \\
+    DeptB & -0.425421 & 1.589019 & -0.268 & 0.789 \\
+    DeptC & 0.016910 & 1.520461 & 0.011 & 0.991 \\
+    DeptD & -0.140016 & 1.508997 & -0.093 & 0.926 \\
+    DeptE & -0.405236 & 1.537785 & -0.264 & 0.792 \\
+    DeptF & -0.238995 & 1.538161 & -0.155 & 0.877 \\
+    Freq & -0.005055 & 0.003855 & -1.311 & 0.190 \\
+    \hline
+    \end{longtable}
+
+    \begin{flushleft}
+    \textbf{(Dispersion parameter for binomial family taken to be 1)}
+    \end{flushleft}
+
+    \begin{flushleft}
+        Null deviance: 33.271 on 23 degrees of freedom \\
+    Residual deviance: 31.229 on 16 degrees of freedom \\
+    AIC: 47.229
+    \end{flushleft}
+
+    \begin{flushleft}
+    Number of Fisher Scoring iterations: 4
+    \end{flushleft}
+
+    \subsection{Modèle multinomial : multinom}
+
+    \begin{flushleft}
+    \# weights: 30 (20 variable) \\
+    initial value 43.002227 \\
+    iter 10 value 42.053590 \\
+    iter 20 value 42.009535 \\
+    final value 42.009529 \\
+    converged
+    \end{flushleft}
+
+    \begin{flushleft}
+    \textbf{Call:} \\
+    multinom(formula = formula, data = data)
+    \end{flushleft}
+
+    \begin{flushleft}
+    \textbf{Coefficients:}
+    \end{flushleft}
+
+    \begin{longtable}{lcccc}
+    \hline
+    \textbf{Variable} & \textbf{B} & \textbf{C} & \textbf{D} & \textbf{E} \\
+    \hline
+    \endfirsthead
+    \hline
+    (Intercept) & 1.06214637 & 0.05090361 & 0.45406871 & 1.06508960 \\
+    AdmitRejected & 0.53712321 & 0.01598658 & 0.17612656 & 0.53907992 \\
+    GenderFemale & -0.40687273 & -0.01820933 & -0.16312072 & -0.40827317 \\
+    Freq & -0.0060425089 & -0.0002152043 & -0.0021397583 & -0.0060645318 \\
+    \hline
+    \end{longtable}
+
+    \begin{flushleft}
+    \textbf{Std. Errors:}
+    \end{flushleft}
+
+    \begin{longtable}{lcccc}
+    \hline
+    \textbf{Variable} & \textbf{B} & \textbf{C} & \textbf{D} & \textbf{E} \\
+    \hline
+    \endfirsthead
+    \hline
+    (Intercept) & 1.663603 & 1.748532 & 1.697432 & 1.663578 \\
+    AdmitRejected & 1.553343 & 1.471566 & 1.493901 & 1.553613 \\
+    GenderFemale & 1.504920 & 1.488066 & 1.481261 & 1.505161 \\
+    Freq & 0.006246139 & 0.005360450 & 0.005561559 & 0.006250557 \\
+    \hline
+    \end{longtable}
+
+    \begin{flushleft}
+    Residual Deviance: 84.01906 \\
+    AIC: 124.0191
+    \end{flushleft}
+
+    \subsection{Comparaison des modèles}
+    
+    Pour comparer plusieurs modèles, nous devons prendre en compte la déviance résiduelle et l'AIC. Plus ces indicateurs sont faibles, meilleur est le modèle.
+
+    Dans notre exemple, on a utilisé le même jeu de données pour le modèle binaire et multinomial ; la variable cible était "Gender" pour le modèle binaire et "Dept" pour le modèle multinomial.
+
+    Pour le modèle binaire, la déviance résiduelle était de 31,229 et l'AIC de 47,229.
+
+    Pour ce qui est du modèle multinomial, la déviance résiduelle était de 84, 019 et l'AIC de 124, 019.
+
+    On peut donc en déduire que le modèle binaire (glm) est meilleur que le modèle multinomial (multinom).
+
+    \section{Comparaison avec Sci-Kit Learn}
+
+    Nous avons également effectué la régression logistique via le package python "Sci-kit Learn", sur une variable binaire ainsi que sur une variable multinomiale. 
+
+    Pour définir la qualité d'un modèle via cette méthode, c'est l'accuracy du modèle que nous devons regarder. Plus l'accuracy est élevée, meilleur est le modèle.
+
+    Que ça soit dans notre package ou en utilisant Sci-kit Learn, on remarque que le modèle est bien plus efficace sur les variables binaires. On trouve une accuracy de 0, 94 pour la variable binaire et de 0,24 pour la variable multinomiale.
+
+    On peut donc en déduire que notre package dispose d'une qualité de prédiction similaire à notre package. 
+
+    Pour ce qui est de la rapidité d'exécution des deux méthodes, notre package rend un résultat à la même vitesse que Sci-kit Learn. 
 
 	\chapter{Lexique}
 
@@ -527,10 +963,28 @@
 	\label{taux apprentissag}
 	\entreelex{Taux d'apprentissage}{Ou learning Rate : il fixe la « grandeur » du pas de chaque itération de la descente de gradient.}
 
-	\entreelex{Descente de gradient}{La descente de gradient est un algorithme d'optimisation couramment utilisé pour entraîner les modèles de machine learning et les réseaux neuronaux. Ce type d'algorithme entraîne les modèles de machine learning par réduction des erreurs entre les résultats prédits et les résultats réels.\cube Le point de départ n'est qu'un point arbitraire qui nous permet d'évaluer les performances. À partir de ce point de départ, nous allons trouver la dérivée (ou la pente) et, à partir de là, nous pourrons utiliser une ligne tangente pour observer l'inclinaison de la pente. La pente renseigne sur les mises à jour des paramètres, c'est-à-dire les poids et les biais. La pente au point de départ est plus forte, mais au fur et à mesure que de nouveaux paramètres sont générés, elle devrait progressivement diminuer jusqu'à atteindre le point le plus bas de la courbe, dénommé point de convergence.\cube Comme pour trouver la ligne de meilleur ajustement dans la régression linéaire, l'objectif de la descente de gradient est de minimiser la fonction de coût, ou l'erreur entre y prédit et y réel. Pour ce faire, deux points de données sont nécessaires : une orientation et un taux d'apprentissage. Ces facteurs déterminent les calculs de dérivée partielle des itérations futures, ce qui lui permet d'atteindre progressivement le minimum local ou global (c'est-à-dire le point de convergence).. La fonction de perte dans la descente de gradient agit spécifiquement comme un baromètre, évaluant sa précision à chaque itération des mises à jour de paramètres. Jusqu'à ce que la fonction soit proche ou égale à zéro, le modèle continue à ajuster ses paramètres pour obtenir l'erreur la plus faible possible.\cube Il existe trois types d'algorithmes d'apprentissage par descente de gradient : la descente de gradient par lots, la descente de gradient stochastique et la descente de gradient par mini-lots.}
-
 	\listoffigures
 
-    \printbibliography
+    \begin{thebibliography}{1}
+
+    \bibitem{datatab}
+    Datatab. Régression logistique. \url{https://datatab.fr/tutorial/logistic-regression}.
+
+    \bibitem{pratique_logistique}
+    Ricco Rakotomalala. Pratique de la régression logistique. \url{https://eric.univ-lyon2.fr/ricco/cours/cours/pratique_regression_logistique.pdf}.
+
+    \bibitem{IBM}
+    IBM. Qu’est-ce que la régression logistique ? \url{https://www.ibm.com/fr-fr/topics/logistic-regression}
+
+    \bibitem{dstest}
+    Jérémy Robert. La régression logistique, qu’est-ce que c’est ? \url{https://datascientest.com/regression-logistique-quest-ce-que-cest}
+
+    \bibitem{riccoonehot}
+    Ricco Rakotomalala. Data Science - One Hot Encoding pour la régression logistique \url{https://www.youtube.com/watch?v=WfbJKLQPNEo}
+
+    \bibitem{makisreglog}
+    lemakistateux. La régression logistique \url{https://lemakistatheux.wordpress.com/2015/09/02/la-regression-logistique/}
+
+    \end{thebibliography}
 
 \end{document}

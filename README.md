@@ -64,6 +64,6 @@ Les contributions sont les bienvenues ! Pour contribuer :
 
   
 ## Auteurs
-Antoine ORUEZABALA 
-Linh Nhi LE DINH
-Béranger THOMAS
+- Antoine ORUEZABALA
+- Linh Nhi LE DINH
+- Béranger THOMAS

@@ -45,7 +45,7 @@ install.packages('caret')
 
 4) Installer le package mimosa que nous avons créé
 ```bash
-install_github("AntoineORUEZABALA/RepLogRM2@package")
+install_github("AntoineORUEZABALA/RepLogRM2")
 ```
 
 ## Utilisation

@@ -2,7 +2,7 @@ Package: mimosa
 Title: Logistic Regression for Multinomial and Binary Classification
 Version: 0.1.0
 Authors : Linh nhi LE-DINH [Master 2 SISE - Lyon 2], Béranger THOMAS [Master 2 SISE - Lyon 2] & Antoine ORUEZEBALA [Master 2 SISE - Lyon 2]
-Maintainer: The package maintainers are Linh nhi LE-DINH <linh-nhi.le-dinh@univ-lyon2.fr>, 
+Maintainers: The package maintainers are Linh nhi LE-DINH <linh-nhi.le-dinh@univ-lyon2.fr>, 
 				       Béranger THOMAS <beranger.thomas@univ-lyon2.fr> 
 				       and Antoine ORUEZABALA <antoine.oruezabala@univ-lyon2.fr>
 Description: Mixed Input Multinomial Optimization for Statistical Analysis (MIMOSA) provides a custom implementation of logistic regression models, 

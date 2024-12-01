@@ -15,7 +15,7 @@ Make sure you have R (>= 4.0.0) installed. The package relies on the following d
 
 If needed, you can install the required dependencies separately :
 ```bash
-install.packages(c("R6", "caret", "ggplot2, "pmml"))
+install.packages(c("R6", "caret", "ggplot2, "pmml "))
 ```
 To install the package, please use the following code lines:
 ```bash
@@ -26,8 +26,26 @@ And then to import it :
 ```bash
 library(mimosa)
 ```
-
 ## Documentation
+In case of any difficulties using one of the function, you can refer to the documentation of the function with these two possibilities:
+```bash
+help(LogisticRegression)
+
+?LogisticRegression
+```
+## Dataset
+Five datasets are included within the package in order to test the different models. The link refers to the source of the dataset :
+
+- "iris" - [lien](https://www.kaggle.com/datasets/arshid/iris-flower-dataset)
+- breast_cancer - [lien](https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data)
+- titanic  - [lien](https://www.kaggle.com/c/titanic/data)
+- depression  - [lien]([https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data](https://www.kaggle.com/datasets/arashnic/the-depression-dataset))
+- gym_members_exercise_tracking  - [lien](https://www.kaggle.com/datasets/valakhorasani/gym-members-exercise-dataset)
+
+
+
+
+
 
 Création d’un package proposant la méthode Régression logistique pour la classification supervisée avec la prise en charge de variables prédictives mixtes.
 

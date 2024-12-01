@@ -4,7 +4,7 @@
 \name{mimosa}
 \alias{mimosa-package}
 \alias{mimosa}
-\title{Mimosa: A Logistic Regression and Preprocessing Package}
+\title{Mimosa: Mixed Input Multinomial Optimization for Statistical Analysis (MIMOSA)}
 \description{
 \strong{Mimosa} is a package designed for logistic regression and comprehensive data preprocessing.
 It includes tools for binary and multinomial logistic regression, as well as a full pipeline
@@ -42,27 +42,6 @@ and normalizing numerical data.
 }
 }
 
-\examples{
-library(mimosa)
-
-# Preprocessing example
-data <- data.frame(
-  Age = c(25, 30, NA, 40),
-  Gender = c("M", "F", "M", NA),
-  Salary = c(50000, 60000, 55000, NA),
-  Target = c(1, 0, 1, 0)
-)
-
-processed_data <- pretraitement_complet(data, cible = "Target")
-print(processed_data)
-
-# Logistic Regression example
-model <- LogisticRegression$new(learning_rate = 0.01, max_iter = 500)
-model$fit(processed_data[, -4], processed_data$Target)
-predictions <- model$predict(processed_data[, -4])
-print(predictions)
-
-}
 \author{
 \strong{Maintainer}: Linh Nhi LE DINH \email{linh-nhi.le-dinh@univ-lyon2.fr}
 

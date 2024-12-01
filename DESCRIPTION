@@ -1,19 +1,16 @@
 Package: mimosa
 Title: Logistic Regression for Multinomial and Binary Classification
 Version: 0.1.0
-Authors@R: 
-    c(
-      person("Linh Nhi", "LE DINH", email = "linhnhi.ledinh@hotmail.com", role = c("aut", "cre")),
-      person("Beranger", "THOMAS", role = "aut"),
-      person("Antoine", "ORUEZABALA", role = "aut")
-    )
-Description: MIMOSA provides a custom implementation of logistic regression models, 
-  supporting both binary and multinomial classification tasks. The package 
-  handles explanatory variables of mixed types, including both quantitative 
-  and qualitative variables. It includes preprocessing utilities for missing 
-  value imputation, one-hot encoding of categorical variables, and normalization 
-  of numerical variables. Designed for flexibility and ease of use, MIMOSA is 
-  suitable for a wide range of logistic regression applications.
+Authors : Linh nhi LE-DINH [Master 2 SISE - Lyon 2], Béranger THOMAS [Master 2 SISE - Lyon 2] & Antoine ORUEZEBALA [Master 2 SISE - Lyon 2]
+Maintainer: The package maintainers are Linh nhi LE-DINH <linh-nhi.le-dinh@univ-lyon2.fr>, 
+				       Béranger THOMAS <beranger.thomas@univ-lyon2.fr> 
+				       and Antoine ORUEZABALA <antoine.oruezabala@univ-lyon2.fr>
+Description: Mixed Input Multinomial Optimization for Statistical Analysis (MIMOSA) provides a custom implementation of logistic regression models, 
+supporting both binary and multinomial classification tasks. 
+The package handles explanatory variables of mixed types, including both quantitative and qualitative variables.
+It includes preprocessing utilities for missing value imputation, one-hot encoding of categorical variables,
+and normalization of numerical variables. 
+Designed for flexibility and ease of use, MIMOSA is suitable for a wide range of logistic regression applications.
 License: GPL-3
 LazyData: true
 Imports: 
@@ -23,8 +20,3 @@ Imports:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Suggests: 
-    testthat (>= 3.0.0)
-Config/testthat/edition: 3
-URL: https://github.com/Linn2d/mimosa
-BugReports: https://github.com/Linn2d/mimosa/issues

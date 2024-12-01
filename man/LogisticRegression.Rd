@@ -101,11 +101,6 @@ This method initializes the logistic regression model with specified parameters.
 }
 \subsection{Returns}{
 An instance of the LogisticRegression class.
-Print Model Information
-
-This method prints a summary of the logistic regression model's current configuration.
-It includes details such as classification type, learning rate, regularization type,
-number of classes (if weights are initialized), and convergence tolerance.
 }
 }
 \if{html}{\out{<hr>}}
@@ -118,11 +113,6 @@ number of classes (if weights are initialized), and convergence tolerance.
 
 \subsection{Returns}{
 None. Prints the information to the console.
-Summary of the Logistic Regression Model
-
-This method provides a detailed summary of the logistic regression model, including weights,
-feature importance, and training losses. It supports both binary and multinomial classification.
-Optionally, a visualization of feature importance and the training loss history can be included.
 }
 }
 \if{html}{\out{<hr>}}

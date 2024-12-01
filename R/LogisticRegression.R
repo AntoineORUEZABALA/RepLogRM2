@@ -41,7 +41,7 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
     X_train = NULL,
     y_train = NULL,
 
-    #'
+
     #' @description This method initializes the logistic regression model with specified parameters.
     #'
     #' @param learning_rate A numeric value for the learning rate. Default is 0.01.
@@ -51,6 +51,8 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
     #' @param reg_lambda A numeric value for the strength of the regularization. Default is 0.01.
     #' @param tolerance A numeric value for the convergence threshold. Default is 1e-4.
     #' @return An instance of the LogisticRegression class.
+    #
+    #' @export
     initialize = function(learning_rate = 0.01, max_iter = 1000, classification_type = "binary", regularization = NULL, reg_lambda = 0.01, tolerance = 1e-4) {
       self$learning_rate <- learning_rate
       self$max_iter <- max_iter
@@ -67,6 +69,8 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
     #' number of classes (if weights are initialized), and convergence tolerance.
     #'
     #' @return None. Prints the information to the console.
+    #'
+    #' @export
     print = function() {
       cat("Logistic Regression Model\n")
       cat("-------------------------\n")

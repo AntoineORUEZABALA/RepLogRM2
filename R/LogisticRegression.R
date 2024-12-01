@@ -482,6 +482,113 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
         }
       }
       return(cm)
+    },
+
+    #' Export Model to PMML
+    #'
+    #' This method exports the trained logistic regression model to a PMML (Predictive Model Markup Language) file.
+    #' PMML is a standard format for representing predictive models that can be used in various tools and platforms.
+    #'
+    #' @param file_path A character string specifying the path where the PMML file should be saved. Default is `"model.pmml"`.
+    #'
+    #' @details
+    #' The method checks if the model has been trained before exporting. It supports both binary and multinomial
+    #' logistic regression models. The resulting PMML file contains the coefficients, intercept, and other
+    #' necessary metadata to represent the logistic regression model.
+    #'
+    #' For binary classification, the model outputs probabilities for two classes (default categories: `"0"` and `"1"`).
+    #' For multinomial classification, it outputs probabilities for multiple classes.
+    #'
+    #' @return None. The method saves the PMML file to the specified path.
+    #'
+    #' @export
+    # Export to PMML
+    export_pmml = function(file_path = "model.pmml") {
+      # Vérifier si le modèle est formé
+      if (is.null(self$X_train)) {
+        stop("Erreur : X_train n'a pas été initialisé. Entraînez le modèle avant d'exporter en PMML.")
+      }
+
+      # Charger la bibliothèque XML
+      library(XML)
+
+      # Récupérer les données nécessaires
+      intercept <- self$weights[1, ]
+      coefficients <- self$weights[-1, , drop = FALSE]
+      feature_names <- colnames(self$X_train)
+
+      if (is.null(feature_names)) {
+        stop("Erreur : Les noms des colonnes de X_train ne sont pas définis.")
+      }
+
+      # Déterminer la méthode de normalisation et les catégories cibles
+      normalization_method <- ifelse(self$classification_type == "binary", "logit", "softmax")
+      target_categories <- ifelse(self$classification_type == "binary", c("0", "1"), as.character(0:(ncol(self$weights) - 1)))
+
+      # Créer l'élément racine PMML
+      pmml <- newXMLNode(
+        "PMML",
+        namespaceDefinitions = c(
+          "xmlns" = "http://www.dmg.org/PMML-4_2",
+          "xsi" = "http://www.w3.org/2001/XMLSchema-instance"
+        ),
+        attrs = c(version = "4.2")
+      )
+
+      # Ajouter un en-tête
+      header <- newXMLNode("Header", parent = pmml)
+      newXMLNode("Application", attrs = c(name = "LogisticRegressionR6", version = "1.0"), parent = header)
+
+      # Ajouter le dictionnaire de données
+      data_dictionary <- newXMLNode("DataDictionary", attrs = c(numberOfFields = length(feature_names) + 1), parent = pmml)
+      for (name in feature_names) {
+        newXMLNode("DataField", attrs = c(name = name, optype = "continuous", dataType = "double"), parent = data_dictionary)
+      }
+
+      # Ajouter les catégories cibles au champ "target"
+      target_field <- newXMLNode("DataField", attrs = c(name = "target", optype = "categorical", dataType = "string"), parent = data_dictionary)
+      for (category in target_categories) {
+        newXMLNode("Value", attrs = c(value = category), parent = target_field)
+      }
+
+      # Ajouter le modèle de régression
+      regression_model <- newXMLNode(
+        "RegressionModel",
+        attrs = c(
+          functionName = "classification",
+          modelName = "LogisticRegressionModel",
+          normalizationMethod = normalization_method,
+          targetFieldName = "target"
+        ),
+        parent = pmml
+      )
+
+      # Ajouter le schéma de données (MiningSchema)
+      mining_schema <- newXMLNode("MiningSchema", parent = regression_model)
+      for (name in feature_names) {
+        newXMLNode("MiningField", attrs = c(name = name, usageType = "active"), parent = mining_schema)
+      }
+      newXMLNode("MiningField", attrs = c(name = "target", usageType = "target"), parent = mining_schema)
+
+      # Ajouter les tables de régression
+      for (i in seq_along(target_categories)) {
+        regression_table <- newXMLNode("RegressionTable", attrs = c(
+          intercept = as.character(intercept[i]),
+          targetCategory = target_categories[i]
+        ), parent = regression_model)
+
+        for (j in seq_along(feature_names)) {
+          newXMLNode(
+            "NumericPredictor",
+            attrs = c(name = feature_names[j], coefficient = as.character(coefficients[j, i])),
+            parent = regression_table
+          )
+        }
+      }
+
+      # Sauvegarder le fichier PMML
+      saveXML(pmml, file = file_path)
+      cat(sprintf("Modèle exporté avec succès au format PMML dans le fichier : %s\n", file_path))
     }
   )
 )

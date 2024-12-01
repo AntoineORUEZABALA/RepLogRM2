@@ -1,0 +1,14 @@
+<PMML xmlns:xmlns="http://www.dmg.org/PMML-4_2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="4.2">
+  <Header>
+    <Application name="LogisticRegressionR6" version="1.0"/>
+  </Header>
+  <DataDictionary numberOfFields="1">
+    <DataField name="target" optype="categorical" dataType="string"/>
+  </DataDictionary>
+  <RegressionModel functionName="classification" modelName="LogisticRegressionModel" normalizationMethod="logit" targetFieldName="target">
+    <MiningSchema>
+      <MiningField name="target" usageType="target"/>
+    </MiningSchema>
+    <RegressionTable intercept="-0.0796956513509625" targetCategory="0"/>
+  </RegressionModel>
+</PMML>

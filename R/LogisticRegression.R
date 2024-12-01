@@ -505,7 +505,7 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
     # Export to PMML
     export_pmml = function(file_path = "model.pmml") {
       # Vérifier si le modèle est formé
-      if (is.null(self$X_train)) {
+      if (is.null(X_train)) {
         stop("Erreur : X_train n'a pas été initialisé. Entraînez le modèle avant d'exporter en PMML.")
       }
 
@@ -515,7 +515,7 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
       # Récupérer les données nécessaires
       intercept <- self$weights[1, ]
       coefficients <- self$weights[-1, , drop = FALSE]
-      feature_names <- colnames(self$X_train)
+      feature_names <- colnames(X_train)
 
       if (is.null(feature_names)) {
         stop("Erreur : Les noms des colonnes de X_train ne sont pas définis.")

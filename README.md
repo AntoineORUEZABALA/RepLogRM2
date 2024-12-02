@@ -69,7 +69,7 @@ To get more informations about the dataset, use :
 ## Usage of the package 
 Here is an example of how to use the package with the gym_members_exercise_tracking dataset, demonstrating a use case where the target variable is multiclass (not binary):
 
-*Note that if you want to predict a binary classification problem, you need to set the argument `classification_type = "binary"`).*
+*Note that if you want to predict a binary classification problem, you need to set the argument `classification_type = "binary"`) when you instantiate the class*
 ```bash
 
 

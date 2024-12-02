@@ -262,6 +262,7 @@ The application is organized into 4 tabs:
 3. **Logistic Regression with GLM/Multinom**: Performs logistic regression using the GLM function for binary variables or the Multinom function for multinomial variables.
 4. **Logistic Regression with Mimosa**: Performs logistic regression using the MIMOSA method from our custom package.
 
+More information here (in french !) : https://youtu.be/knu74US5hV4
 
 ## Contribution
 Contributions are welcome! To contribute:

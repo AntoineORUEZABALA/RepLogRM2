@@ -6,6 +6,8 @@
 - [Installation](#installation)
 - [Documentation](#documentation)
 - [Dataset](#dataset)
+- [Shiny Application](#shiny-application)
+- [Usage of the package](#usage-of-the-package)
 - [Contribution](#contribution)
 - [Authors](#authors)  
 
@@ -168,7 +170,6 @@ ggplot(data.frame(epoch = 1:length(model$losses), loss = model$losses), aes(x = 
   labs(title = "Loss Convergence", x = "Epoch", y = "Loss")
 ```
 ```bash
-![Loss Convergence](https://raw.githubusercontent.com/AntoineORUEZABALA/RepLogRM2/main/images/loss.png)
 
 
 ```
@@ -243,66 +244,34 @@ Final Loss: 1.368232
 ```
 By default, the summary() function displays a plot of the most important variables based on their absolute values, allowing you to quickly identify which features have the greatest impact on the model's predictions.
 ```bash
-IMAGE A RAJOUTER
+
 ```
 
+## Shiny Application
 
+We have also developed a **Shiny application** to interact with our package.
 
+### How to Launch the Application:
+- Open the file `Mimosa - RShiny.R` on RStudio.
+- Click the **"Run App"** button.
 
-##AncienV
+### Description of the Shiny Application:
+The application is organized into 4 tabs:
+1. **Data Overview**: Displays information about the dataset and provides an interactive table to view the data.
+2. **Statistical Summary**: Shows the summary statistics for different variables in the dataset (Minimum, 1st Quartile, Median, Mean, 3rd Quartile, and Maximum).
+3. **Logistic Regression with GLM/Multinom**: Performs logistic regression using the GLM function for binary variables or the Multinom function for multinomial variables.
+4. **Logistic Regression with Mimosa**: Performs logistic regression using the MIMOSA method from our custom package.
 
-
-
-
-
-Création d’un package proposant la méthode Régression logistique pour la classification supervisée avec la prise en charge de variables prédictives mixtes.
-
-Le coeur du package est un algorithme s'appuie sur une descente de gradient pour réaliser la régression. Nous l'avons nommé MIMOSA, pour Mixed Inputs Multinomial Optimization for Statistical Analysis.
-
-Le package peut être installé directement à partir de GitHub. Il intègrer un fichier d’aide en anglais aux normes R.
-
-Pour l'implémentation la variable cible doit être qualitative. Les « p » variables explicatives (p ≥ 1) sont de types quelconques (quantitatives ou qualitatives).
-
-Cette distribution inclut également une application RShiny qui exploite le package Mimosa. Lors de l'utilisation de l'application, la préparation des données n'est pas nécessaire, elle sera réalisé par l'application elle même.
-
-En revanche pour utiliser le package indépendemment, il faut réaliser la préparation adéquate :
-- imputation des valeurs manquantes, numériques et catégorielles,
-- normalisation (centrage et réduction) des données numériques,
-- encodage disjonctif des données catégorielles.
-
-La classe de calcul est implementée selon la norme R6. Elle est constitué d'un constructeur, d'une méthode fit pour modéliser les données d'apprentissage, d'une fonction predict qui renvoie la classe prédite pour chaque individu, une fonction predict_proba qui renvoie les probabilités d’appartenance aux classes, une procédure print qui affiche les informations succintes sur le modèle et une procédure summary qui affiche les informations détaillées du modèle.
-
-
-
-
-
-
-
-
- 
-## Utilisation
-Ce projet étant une application RShiny.
-
-Si vous voulez la lancer :
-- Ouvrez le fichier app.R
-- Appuyez sur le bouton "Run App"
-
-## Description de l'application RShiny
-L'application s'organise en 4 onglets : Aperçu des données, Résumé statistique, Régression Logistique avec GLM/Multinom et Régression Logistique avec Mimosa.  
-- Aperçu des données présente les informations du dataset et un tableau interactif qui affiche les données
-- Résumé statistique permet d'afficher les statistiques des différentes variables du jeu de données (Minimum, 1er Quartile, Médiane, Moyenne, 3ème Quartile et Maximum).
-- Régression Logistique avec GLM/Multinom effectue la régression logistique via la fonction GLM pour des variables binaires ou via la fonction Multinom pour des variables multinomiales.
-- Régression Logistique avec Mimosa effectue la régression logistique via la méthode MIMOSA dont on a crée un package.
 
 ## Contribution
-Les contributions sont les bienvenues ! Pour contribuer :
-- Forkez le projet.
-- Créez votre branche de fonctionnalité (```git checkout -b feature/NomFonctionnalite```).
-- Commitez vos changements (```git commit -m 'Description des modifications'```).
-- Poussez à la branche (```git push origin feature/NomFonctionnalite```).
-- Ouvrez une Pull Request.
+Contributions are welcome! To contribute:
+- Fork the project.
+- Create your feature branch (git checkout -b feature/FeatureName)..
+- Commit your changes (git commit -m 'Description of changes').
+- Push to the branch (git push origin feature/FeatureName).
+- Open a Pull Request.
 
-  
+
 ## Authors
 - Antoine ORUEZABALA
 - Linh Nhi LE DINH

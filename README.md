@@ -1,5 +1,15 @@
 # MIMOSA : A Mixed Input Multinomial Optimization for Statistical Analysis
 
+## Table of Contents
+
+- [Description](#description)
+- [Installation](#installation)
+- [Documentation](#documentation)
+- [Dataset](#dataset)
+- [Contribution](#contribution)
+- [Auteurs](#auteurs)  
+
+
 ## Description
 
 MIMOSA (for "Mixed Inputs Multinomial Optimization for Statistical Analysis") provides a custom implementation of logistic regression models, supporting both binary and multinomial classification tasks. The package handles explanatory variables of mixed types, including both quantitative and qualitative variables. It includes preprocessing utilities for missing value imputation, one-hot encoding of categorical variables, and normalization of numerical variables. Designed for flexibility and ease of use, MIMOSA is suitable for a wide range of logistic regression applications.
@@ -36,11 +46,21 @@ help(LogisticRegression)
 ## Dataset
 Five datasets are included within the package in order to test the different models. The link refers to the source of the dataset :
 
-- "iris" - [lien](https://www.kaggle.com/datasets/arshid/iris-flower-dataset)
-- breast_cancer - [lien](https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data)
-- titanic  - [lien](https://www.kaggle.com/c/titanic/data)
-- depression  - [lien]([https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data](https://www.kaggle.com/datasets/arashnic/the-depression-dataset))
-- gym_members_exercise_tracking  - [lien](https://www.kaggle.com/datasets/valakhorasani/gym-members-exercise-dataset)
+- "iris" - [lien](https://www.kaggle.com/datasets/arshid/iris-flower-dataset) : This classic dataset contains measurements of flowers from three Iris species, ideal for classification tasks.
+- breast_cancer - [lien](https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data) : Data on breast tumors used to predict whether they are benign or malignant.
+- titanic  - [lien](https://www.kaggle.com/c/titanic/data) : Passenger data from the Titanic, commonly used to predict survival rates based on various features.
+- depression  - [lien](https://www.kaggle.com/datasets/arashnic/the-depression-dataset) : Dataset containing survey data to analyze mental health and depression symptoms.
+- gym_members_exercise_tracking  - [lien](https://www.kaggle.com/datasets/valakhorasani/gym-members-exercise-dataset) : This dataset provides a detailed overview of gym members' exercise routines, physical attributes, and fitness metrics. It can be used to predict various outcomes such as Workout_Type or Gender.<br><br>
+
+To import a dataset, use the function :
+```bash
+data(depression)
+```
+
+To get more informations about the dataset, use :
+```bash
+?depression
+```
 
 
 
@@ -64,13 +84,7 @@ En revanche pour utiliser le package indépendemment, il faut réaliser la prép
 
 La classe de calcul est implementée selon la norme R6. Elle est constitué d'un constructeur, d'une méthode fit pour modéliser les données d'apprentissage, d'une fonction predict qui renvoie la classe prédite pour chaque individu, une fonction predict_proba qui renvoie les probabilités d’appartenance aux classes, une procédure print qui affiche les informations succintes sur le modèle et une procédure summary qui affiche les informations détaillées du modèle.
 
-## Table des Matières
-- [Description](#description)
-- [Installation](#installation)
-- [Utilisation](#utilisation)
-- [Description de l'application RShiny](#description-de-lapplication-rshiny)
-- [Contribution](#contribution)
-- [Auteurs](#auteurs)  
+
 
 ## Installation
 Pour installer ce projet, suivez ces étapes :

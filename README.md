@@ -169,7 +169,8 @@ ggplot(data.frame(epoch = 1:length(model$losses), loss = model$losses), aes(x = 
   geom_line() +
   labs(title = "Loss Convergence", x = "Epoch", y = "Loss")
 ```
-![loss](https://github.com/user-attachments/assets/69e438c9-225e-43c2-a7a1-68666f60c112)
+<img src="https://github.com/user-attachments/assets/69e438c9-225e-43c2-a7a1-68666f60c112" alt="loss" style="width:80%;">
+
 
 The summary() function provides a detailed overview of the logistic regression model, including information such as the type of classification, regularization parameters, model weights, coefficients, and training losses. This is especially useful for understanding the model's behavior and evaluating its parameters.
 
@@ -242,8 +243,8 @@ Final Loss: 1.368232
 ```
 By default, the summary() function displays a plot of the most important variables based on their absolute values, allowing you to quickly identify which features have the greatest impact on the model's predictions.
 
-![featuresImportance](https://github.com/user-attachments/assets/9591c462-eaad-474d-8228-a05c7a6fd7b4)
-```
+<img src="https://github.com/user-attachments/assets/9591c462-eaad-474d-8228-a05c7a6fd7b4" alt="featuresImportance" style="width:80%;">
+
 
 ## Shiny Application
 

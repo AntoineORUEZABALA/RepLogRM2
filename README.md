@@ -59,7 +59,7 @@ Five datasets are included within the package in order to test the different mod
 
 To import a dataset, use the function :
 ```bash
-data(depression)
+data("depression")
 ```
 
 To get more informations about the dataset, use :

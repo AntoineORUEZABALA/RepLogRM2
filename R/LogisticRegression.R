@@ -497,7 +497,7 @@ LogisticRegression <- R6::R6Class("LogisticRegression",
     #' necessary metadata to represent the logistic regression model.
     #'
     #' For binary classification, the model outputs probabilities for two classes (default categories: `"0"` and `"1"`).
-    #' For multinomial classification, it outputs probabilities for multiple classes.
+    #' For multinomial classification, it outputs probabilities for multiple classes
     #'
     #' @return None. The method saves the PMML file to the specified path.
     #'

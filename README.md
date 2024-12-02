@@ -244,7 +244,7 @@ Final Loss: 1.368232
 ```
 By default, the summary() function displays a plot of the most important variables based on their absolute values, allowing you to quickly identify which features have the greatest impact on the model's predictions.
 ```bash
-
+![featuresImportance](https://github.com/user-attachments/assets/9591c462-eaad-474d-8228-a05c7a6fd7b4)
 ```
 
 ## Shiny Application

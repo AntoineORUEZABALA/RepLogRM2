@@ -63,6 +63,7 @@ It supports L1 and L2 regularization, as well as early stopping based on loss co
 \item \href{#method-LogisticRegression-recall}{\code{LogisticRegression$recall()}}
 \item \href{#method-LogisticRegression-f1_score}{\code{LogisticRegression$f1_score()}}
 \item \href{#method-LogisticRegression-confusion_matrix}{\code{LogisticRegression$confusion_matrix()}}
+\item \href{#method-LogisticRegression-export_pmml}{\code{LogisticRegression$export_pmml()}}
 \item \href{#method-LogisticRegression-clone}{\code{LogisticRegression$clone()}}
 }
 }
@@ -539,6 +540,38 @@ The confusion matrix shows the number of correct and incorrect predictions for e
 }
 \subsection{Returns}{
 A matrix where the rows represent the true classes and the columns represent the predicted classes.
+Export Model to PMML
+
+This method exports the trained logistic regression model to a PMML (Predictive Model Markup Language) file.
+PMML is a standard format for representing predictive models that can be used in various tools and platforms.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LogisticRegression-export_pmml"></a>}}
+\if{latex}{\out{\hypertarget{method-LogisticRegression-export_pmml}{}}}
+\subsection{Method \code{export_pmml()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{LogisticRegression$export_pmml(file_path = "model.pmml")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_path}}{A character string specifying the path where the PMML file should be saved. Default is \code{"model.pmml"}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+The method checks if the model has been trained before exporting. It supports both binary and multinomial
+logistic regression models. The resulting PMML file contains the coefficients, intercept, and other
+necessary metadata to represent the logistic regression model.
+
+For binary classification, the model outputs probabilities for two classes (default categories: \code{"0"} and \code{"1"}).
+For multinomial classification, it outputs probabilities for multiple classes.
+}
+
+\subsection{Returns}{
+None. The method saves the PMML file to the specified path.
 }
 }
 \if{html}{\out{<hr>}}

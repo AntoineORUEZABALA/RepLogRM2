@@ -51,11 +51,11 @@ help(LogisticRegression)
 ## Dataset
 Five datasets are included within the package in order to test the different models. The link refers to the source of the dataset :
 
-- "iris" - [lien](https://www.kaggle.com/datasets/arshid/iris-flower-dataset) : This classic dataset contains measurements of flowers from three Iris species, ideal for classification tasks.
-- breast_cancer - [lien](https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data) : Data on breast tumors used to predict whether they are benign or malignant.
-- titanic  - [lien](https://www.kaggle.com/c/titanic/data) : Passenger data from the Titanic, commonly used to predict survival rates based on various features.
-- depression  - [lien](https://www.kaggle.com/datasets/arashnic/the-depression-dataset) : Dataset containing survey data to analyze mental health and depression symptoms.
-- gym_members_exercise_tracking  - [lien](https://www.kaggle.com/datasets/valakhorasani/gym-members-exercise-dataset) : This dataset provides a detailed overview of gym members' exercise routines, physical attributes, and fitness metrics. It can be used to predict various outcomes such as Workout_Type or Gender.<br><br>
+- "iris" - [link](https://www.kaggle.com/datasets/arshid/iris-flower-dataset) : This classic dataset contains measurements of flowers from three Iris species, ideal for classification tasks.
+- breast_cancer - [link](https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data) : Data on breast tumors used to predict whether they are benign or malignant.
+- titanic  - [link](https://www.kaggle.com/c/titanic/data) : Passenger data from the Titanic, commonly used to predict survival rates based on various features.
+- depression  - [link](https://www.kaggle.com/datasets/arashnic/the-depression-dataset) : Dataset containing survey data to analyze mental health and depression symptoms.
+- gym_members_exercise_tracking  - [link](https://www.kaggle.com/datasets/valakhorasani/gym-members-exercise-dataset) : This dataset provides a detailed overview of gym members' exercise routines, physical attributes, and fitness metrics. It can be used to predict various outcomes such as Workout_Type or Gender.<br><br>
 
 To import a dataset, use the function :
 ```bash
